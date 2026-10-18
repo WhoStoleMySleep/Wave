@@ -1,0 +1,30 @@
+import type { DailyMixes, ListeningHistoryPage, LyricsStreamEvent, PlaybackEvent, PlaybackSession } from "../../contracts";
+import { apiPath, withQuery } from "../apiPath";
+import { openEventStream, request, requestNoContent } from "../client";
+import { readServerEvents } from "../serverEvents";
+
+export const playbackEndpoints = {
+  /** The server proxies the audio, so the session carries a URL the audio element can open without headers. */
+  createPlaybackSession(trackId: string, signal?: AbortSignal): Promise<PlaybackSession> {
+    const path = apiPath`/v1/tracks/${trackId}/playback`;
+    return request<PlaybackSession>(path, { method: "POST", body: { transport: "proxy" }, signal });
+  },
+
+  /** Each provider answers at its own pace, so candidates arrive as server-sent events. */
+  async *streamLyrics(trackId: string, signal?: AbortSignal): AsyncGenerator<LyricsStreamEvent> {
+    const stream = await openEventStream(apiPath`/v1/tracks/${trackId}/lyrics`, signal);
+    yield* readServerEvents<LyricsStreamEvent>(stream);
+  },
+
+  recordPlaybackEvent(event: PlaybackEvent): Promise<void> {
+    return requestNoContent("/v1/me/playback/events", { method: "POST", body: event });
+  },
+
+  getHistory(cursor?: string, limit = 30): Promise<ListeningHistoryPage> {
+    return request<ListeningHistoryPage>(withQuery("/v1/me/history", { limit, cursor }));
+  },
+
+  getDailyMixes(): Promise<DailyMixes> {
+    return request<DailyMixes>("/v1/me/recommendations/daily-mixes");
+  },
+};

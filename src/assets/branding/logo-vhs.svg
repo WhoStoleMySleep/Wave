@@ -1,0 +1,11 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="vhs-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ffff"/>
+      <stop offset="33%" stop-color="#ff00ff"/>
+      <stop offset="66%" stop-color="#ffff00"/>
+      <stop offset="100%" stop-color="#00ffff"/>
+    </linearGradient>
+  </defs>
+  <path d="M4 18V38A12 12 0 0 0 28 38A4 4 0 0 1 36 38A12 12 0 0 0 60 38V18A4 4 0 0 0 52 18V38A4 4 0 0 1 44 38A12 12 0 0 0 20 38A4 4 0 0 1 12 38V18A4 4 0 0 0 4 18Z" fill="url(#vhs-gradient)"/>
+</svg>

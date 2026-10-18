@@ -1,0 +1,11 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="carbon-clip">
+      <path d="M4 18V38A12 12 0 0 0 28 38A4 4 0 0 1 36 38A12 12 0 0 0 60 38V18A4 4 0 0 0 52 18V38A4 4 0 0 1 44 38A12 12 0 0 0 20 38A4 4 0 0 1 12 38V18A4 4 0 0 0 4 18Z"/>
+    </clipPath>
+    <pattern id="carbon-pattern" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+      <path d="M0 10L10 0M-2.5 2.5L2.5 -2.5M7.5 12.5L12.5 7.5" stroke="white" stroke-width="1.5"/>
+    </pattern>
+  </defs>
+  <rect width="64" height="64" fill="url(#carbon-pattern)" clip-path="url(#carbon-clip)"/>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "build": {
+    "beforeDevCommand": "pnpm vite --mode selfhost",
+    "beforeBuildCommand": "tsc -b && pnpm vite build --mode selfhost"
+  }
+}

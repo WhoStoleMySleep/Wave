@@ -1,0 +1,181 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-22.04
+            args: ''
+          - name: Windows
+            os: windows-latest
+            args: ''
+          - name: macOS (Apple Silicon)
+            os: macos-latest
+            args: '--target aarch64-apple-darwin'
+          - name: macOS (Intel)
+            os: macos-latest
+            args: '--target x86_64-apple-darwin'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Cache Rust build
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # the release is only created on tag pushes; manual runs just upload artifacts
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VITE_API_URL: ${{ vars.WAVE_API_URL || 'https://wave.wms' }}
+        with:
+          args: ${{ matrix.args }}
+          tagName: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+          releaseName: ${{ startsWith(github.ref, 'refs/tags/') && format('Wave {0}', github.ref_name) || '' }}
+          releaseDraft: false
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-${{ matrix.os }}-${{ strategy.job-index }}
+          path: src-tauri/target/**/release/bundle/
+          if-no-files-found: error
+
+  android:
+    name: Build Android
+    # the desktop job creates the release on tags; the apks are added to it
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # a cached ndk loses its exec bits and linking fails with "command not found"
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: r27
+          local-cache: false
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - name: Cache Rust build
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+          key: android
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # android installs an update over the old apk only when the signatures match
+      - name: Unpack the signing key
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 is not set, the APK cannot be signed without it"
+            exit 1
+          fi
+          cd src-tauri/gen/android
+          echo "$KEYSTORE" | base64 -d > release.jks
+          printf 'keyAlias=%s\npassword=%s\nstoreFile=%s\n' \
+            "$ALIAS" "$PASSWORD" "$PWD/release.jks" > keystore.properties
+
+      # one universal apk would carry native libraries for all four abis
+      - name: Build APKs
+        run: pnpm tauri android build --apk --split-per-abi
+        env:
+          NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+          VITE_API_URL: ${{ vars.WAVE_API_URL || 'https://wave.wms' }}
+
+      # gradle names the variants arm64/arm, phones call them arm64-v8a/armeabi-v7a,
+      # so the abi is read from the package itself
+      - name: Name the APKs after the release
+        run: |
+          mkdir -p "$RUNNER_TEMP/apk"
+          name="${GITHUB_REF_NAME//\//-}"
+          for f in src-tauri/gen/android/app/build/outputs/apk/*/release/*-release.apk; do
+            abi=$(unzip -Z1 "$f" 'lib/*' | cut -d/ -f2 | sort -u | head -1)
+            mv "$f" "$RUNNER_TEMP/apk/wave-${name}-${abi}.apk"
+          done
+          ls -la "$RUNNER_TEMP/apk"
+
+      - name: Attach APKs to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${GITHUB_REF_NAME}" "$RUNNER_TEMP"/apk/*.apk --clobber
+
+      - name: Upload artifacts
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: wave-android
+          path: ${{ runner.temp }}/apk/*
+          if-no-files-found: error
