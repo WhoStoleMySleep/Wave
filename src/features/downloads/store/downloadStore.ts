@@ -10,6 +10,7 @@ import type { Track } from "@/shared/types";
 export type DownloadStatus = "queued" | "downloading" | "error";
 
 const CONCURRENCY = 2;
+const AUTO_COLLECTIONS_KEY = "wave_auto_download_collections";
 
 interface DownloadState {
   hydrated: boolean;
@@ -19,10 +20,16 @@ interface DownloadState {
   statuses: Record<string, DownloadStatus>;
   /** Fraction 0..1 for tracks that are currently downloading. */
   progress: Record<string, number>;
+  /** Collections whose tracks are kept downloaded, including ones added later. */
+  autoCollections: string[];
   hydrate: () => Promise<void>;
   download: (tracks: Track[]) => void;
   remove: (trackIds: string[]) => Promise<void>;
+  cancel: (trackIds: string[]) => void;
   cancelAll: () => void;
+  followCollection: (collectionId: string, tracks: Track[]) => void;
+  unfollowCollection: (collectionId: string, tracks: Track[]) => void;
+  syncCollection: (collectionId: string, tracks: Track[]) => Promise<void>;
 }
 
 const queue: Track[] = [];
@@ -68,6 +75,24 @@ async function fetchAudio(
   // a connection that closes early ends the stream without an error
   if (total > 0 && received < total) throw new Error(`stream ended at ${received} of ${total} bytes`);
   return { blob: new Blob(chunks as BlobPart[], { type: mimeType }), mimeType, loudnessDb: session.loudnessDb };
+}
+
+function readAutoCollections(): string[] {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(AUTO_COLLECTIONS_KEY) ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : [];
+  } catch (error) {
+    log("yellow", "downloads", "auto-download list is unreadable", error);
+    return [];
+  }
+}
+
+function writeAutoCollections(ids: string[]): void {
+  try {
+    localStorage.setItem(AUTO_COLLECTIONS_KEY, JSON.stringify(ids));
+  } catch (error) {
+    log("red", "downloads", "auto-download list could not be saved", error);
+  }
 }
 
 function omit<T>(map: Record<string, T>, key: string): Record<string, T> {
@@ -140,11 +165,17 @@ export const useDownloadStore = create<DownloadState>((set, get) => {
     }
   };
 
+  const setAutoCollections = (ids: string[]) => {
+    writeAutoCollections(ids);
+    set({ autoCollections: ids });
+  };
+
   return {
     hydrated: false,
     records: {},
     statuses: {},
     progress: {},
+    autoCollections: typeof localStorage === "undefined" ? [] : readAutoCollections(),
 
     hydrate: () => {
       hydratePromise ??= waveDb.getDownloads().then((list) => {
@@ -192,6 +223,22 @@ export const useDownloadStore = create<DownloadState>((set, get) => {
       }
     },
 
+    /** Stops queued and running downloads of these tracks; finished ones stay downloaded. */
+    cancel: (trackIds) => {
+      const ids = new Set(trackIds);
+      for (let i = queue.length - 1; i >= 0; i--) if (ids.has(queue[i].id)) queue.splice(i, 1);
+      for (const id of ids) controllers.get(id)?.abort();
+      set((s) => {
+        const statuses = { ...s.statuses };
+        const progress = { ...s.progress };
+        for (const id of ids) {
+          if (statuses[id] !== "error") delete statuses[id];
+          delete progress[id];
+        }
+        return { statuses, progress };
+      });
+    },
+
     cancelAll: () => {
       queue.length = 0;
       for (const controller of controllers.values()) controller.abort();
@@ -202,6 +249,30 @@ export const useDownloadStore = create<DownloadState>((set, get) => {
         }
         return { statuses, progress: {} };
       });
+    },
+
+    followCollection: (collectionId, tracks) => {
+      const { autoCollections, download } = get();
+      if (!autoCollections.includes(collectionId)) setAutoCollections([...autoCollections, collectionId]);
+      download(tracks);
+    },
+
+    unfollowCollection: (collectionId, tracks) => {
+      setAutoCollections(get().autoCollections.filter((id) => id !== collectionId));
+      get().cancel(tracks.map((track) => track.id));
+    },
+
+    /**
+     * Downloads what a followed collection gained since its last sync. Waits for the saved
+     * downloads first, otherwise every finished track would look missing and be queued again.
+     * Failed tracks are left for an explicit retry, so each library change does not repeat the failure.
+     */
+    syncCollection: async (collectionId, tracks) => {
+      if (!get().autoCollections.includes(collectionId)) return;
+      await get().hydrate();
+      const { autoCollections, statuses, download } = get();
+      if (!autoCollections.includes(collectionId)) return;
+      download(tracks.filter((track) => statuses[track.id] !== "error"));
     },
   };
 });

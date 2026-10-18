@@ -381,6 +381,7 @@
     "retry": "Retry download",
     "download_all": "Download all",
     "all_downloaded": "All tracks downloaded",
+    "auto_on": "New tracks download automatically · click to stop",
     "progress": "Downloaded {done} of {total}",
     "empty_title": "No downloads yet",
     "empty_subtitle": "Download tracks or whole playlists to listen without internet",

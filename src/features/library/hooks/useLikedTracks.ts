@@ -1,6 +1,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { api, toClientTrack } from "@/shared/api";
 import type { Track } from "@/shared/types";
+import { useDownloadStore } from "@/features/downloads/store/downloadStore";
 import { LibraryResource } from "./libraryResource";
 
 interface LikedData {
@@ -9,6 +10,7 @@ interface LikedData {
 }
 
 const PAGE_SIZE = 100;
+export const LIKED_COLLECTION_ID = "likes";
 const EMPTY: LikedData = { tracks: [], total: 0 };
 
 const overrides = new Map<string, boolean>();
@@ -48,7 +50,10 @@ const liked = new LibraryResource<LikedData>({
   fetch: fetchLikedTracks,
   isEmpty: (data) => data.tracks.length === 0,
   present: withOverrides,
-  onLoaded: () => overrides.clear(),
+  onLoaded: (data) => {
+    overrides.clear();
+    void useDownloadStore.getState().syncCollection(LIKED_COLLECTION_ID, data.tracks);
+  },
   onCleared: () => overrides.clear(),
 });
 liked.watch();
