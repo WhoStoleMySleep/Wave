@@ -34,6 +34,7 @@ import {
   type TrackSort,
 } from "../lib/trackSort";
 import {
+  LIKED_COLLECTION_ID,
   usePlaylist,
   useLikedTracks,
   useReorderPlaylistTracks,
@@ -812,7 +813,11 @@ function LibraryPlaylistContent() {
                         </Button>
 
                         {!isDownloadsMode && (
-                          <DownloadAllButton tracks={currentTracks} glass={hasCustomBg} />
+                          <DownloadAllButton
+                            collectionId={isLikesMode ? LIKED_COLLECTION_ID : (decodedId ?? "")}
+                            tracks={currentTracks}
+                            glass={hasCustomBg}
+                          />
                         )}
 
                         <DropdownMenu

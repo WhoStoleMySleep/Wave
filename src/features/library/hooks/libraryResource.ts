@@ -15,7 +15,7 @@ export interface LibraryResourceOptions<T> {
   fetch: () => Promise<T>;
   isEmpty: (data: T) => boolean;
   present?: (data: T) => T;
-  onLoaded?: () => void;
+  onLoaded?: (data: T) => void;
   onCleared?: () => void;
 }
 
@@ -103,7 +103,7 @@ export class LibraryResource<T> {
       this.data = await this.options.fetch();
       this.failed = false;
       writeLibrarySnapshot(this.options.snapshotKey, this.data);
-      this.options.onLoaded?.();
+      this.options.onLoaded?.(this.data);
     } catch (error) {
       log("yellow", "library", `${this.options.snapshotKey} failed to load`, error);
       this.failed = true;

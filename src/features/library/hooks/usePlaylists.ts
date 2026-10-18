@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore, type Dispatch, type SetState
 import { api, type UserPlaylist } from "@/shared/api";
 import { queryCache } from "@/shared/cache/queryCache";
 import { onConnectivityRestored } from "@/features/connectivity/store/connectivityStore";
+import { useDownloadStore } from "@/features/downloads/store/downloadStore";
 import { log } from "@/shared/utils/logger";
 import {
   readCoverCache,
@@ -50,6 +51,21 @@ function detailSnapshotKey(id: string): string {
   return `library:playlist:${id}`;
 }
 
+/** Every fresh copy of a playlist passes through here, so tracks added to a followed one get downloaded. */
+function keepDownloaded(id: string, detail: LibraryPlaylistDetail): void {
+  void useDownloadStore.getState().syncCollection(id, detail.tracks);
+}
+
+/** Resumes followed playlists whose downloads were cut short, e.g. by closing the app. */
+async function resumeDownloads(unchanged: LibraryPlaylistSummary[]): Promise<void> {
+  const followed = new Set(useDownloadStore.getState().autoCollections);
+  for (const playlist of unchanged) {
+    if (!followed.has(playlist.id)) continue;
+    const saved = await readLibrarySnapshot<LibraryPlaylistDetail>(detailSnapshotKey(playlist.id));
+    if (saved) keepDownloaded(playlist.id, saved);
+  }
+}
+
 function withCovers(playlist: UserPlaylist, entry: CoverEntry): LibraryPlaylistSummary {
   return { ...playlist, trackCount: entry.trackCount, coverUrl: entry.coverUrls[0] ?? "", coverUrls: entry.coverUrls };
 }
@@ -57,6 +73,7 @@ function withCovers(playlist: UserPlaylist, entry: CoverEntry): LibraryPlaylistS
 async function fetchCoverEntry(playlist: UserPlaylist): Promise<CoverEntry> {
   const detail = toDetail(await api.getUserPlaylist(playlist.id));
   writeLibrarySnapshot(detailSnapshotKey(playlist.id), detail);
+  keepDownloaded(playlist.id, detail);
   return toCoverEntry(detail, playlist.updatedAt);
 }
 
@@ -70,7 +87,9 @@ async function saveMissingDetails(playlists: LibraryPlaylistSummary[]): Promise<
     const saved = await readLibrarySnapshot<LibraryPlaylistDetail>(detailSnapshotKey(playlist.id));
     if (saved?.revision === playlist.revision) continue;
     try {
-      writeLibrarySnapshot(detailSnapshotKey(playlist.id), toDetail(await api.getUserPlaylist(playlist.id)));
+      const detail = toDetail(await api.getUserPlaylist(playlist.id));
+      writeLibrarySnapshot(detailSnapshotKey(playlist.id), detail);
+      keepDownloaded(playlist.id, detail);
     } catch (error) {
       log("yellow", "library", `saving playlist ${playlist.id} for offline failed`, error);
       return;
@@ -88,7 +107,9 @@ async function fetchPlaylists(): Promise<PlaylistList> {
   const covers = Object.fromEntries(items.map((playlist) => [playlist.id, fresh.get(playlist.id) ?? saved[playlist.id]]));
   writeCoverCache(covers);
   const playlists = items.map((playlist) => withCovers(playlist, covers[playlist.id]));
-  void saveMissingDetails(playlists.filter((playlist) => !fresh.has(playlist.id)));
+  const unchanged = playlists.filter((playlist) => !fresh.has(playlist.id));
+  void resumeDownloads(unchanged);
+  void saveMissingDetails(unchanged);
   return { playlists, total: playlists.length };
 }
 
@@ -112,6 +133,7 @@ export function evictPlaylistFromCache(id: string) {
   }));
   queryCache.delete(detailCacheKey(id));
   deleteLibrarySnapshot(detailSnapshotKey(id));
+  useDownloadStore.getState().unfollowCollection(id, []);
 }
 
 export function usePlaylistsList() {
@@ -128,6 +150,7 @@ async function fetchDetail(id: string): Promise<LibraryPlaylistDetail> {
   rememberCovers(id, toCoverEntry(detail, response.playlist.updatedAt));
   queryCache.set(detailCacheKey(id), detail);
   writeLibrarySnapshot(detailSnapshotKey(id), detail);
+  keepDownloaded(id, detail);
   return detail;
 }
 
