@@ -78,7 +78,7 @@ export default function WindowControls({
               ? "apple-glass-pill text-text-primary"
               : isDarkMode
                 ? "bg-black/50 text-white backdrop-blur-xl"
-                : "bg-bg-panel/90 text-text-primary backdrop-blur-xl"
+                : "bg-bg-panel/90 text-text-primary"
         }`}
       >
         <button

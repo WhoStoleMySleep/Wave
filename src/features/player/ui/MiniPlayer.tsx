@@ -347,7 +347,7 @@ function MiniPlayer({
           onPlay={() => {
             void playerEngine.playFromQueue(index);
           }}
-          className={`rounded-[12px] px-[8px] py-[10px] text-left transition-all duration-200 ${
+          className={`rounded-[12px] px-[8px] py-[10px] text-left transition duration-200 ${
             isCurrent
               ? "bg-black/[0.065] dark:bg-white/[0.08]"
               : "bg-transparent hover:bg-black/[0.035] dark:hover:bg-white/[0.04]"
@@ -872,7 +872,7 @@ function MiniPlayer({
             <button
               type="button"
               aria-label={isPlaying ? "Pause" : "Play"}
-              className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-full bg-btn-primary-bg text-btn-primary-text transition-all duration-150 ease-out hover:scale-105 active:scale-[0.96] border-none cursor-pointer shadow-sm"
+              className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-full bg-btn-primary-bg text-btn-primary-text transition duration-150 ease-out hover:scale-105 active:scale-[0.96] border-none cursor-pointer shadow-sm"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => {
                 void playerEngine.togglePlayPause();

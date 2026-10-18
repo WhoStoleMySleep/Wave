@@ -381,7 +381,7 @@ export function StorageTab({ searchQuery: _searchQuery }: { searchQuery?: string
                   onClick={() => toggleCategory(cat.id)}
                   onMouseEnter={() => setHoveredCategoryId(cat.id)}
                   onMouseLeave={() => setHoveredCategoryId(null)}
-                  className={`group w-full flex items-center justify-between px-[10px] py-[8px] rounded-lg transition-all border-0 cursor-pointer text-left ${
+                  className={`group w-full flex items-center justify-between px-[10px] py-[8px] rounded-lg transition border-0 cursor-pointer text-left ${
                     isSelected
                       ? isHovered
                         ? "bg-border-alpha-14 opacity-100"
@@ -393,7 +393,7 @@ export function StorageTab({ searchQuery: _searchQuery }: { searchQuery?: string
                 >
                   <div className="flex items-center gap-[9px] min-w-0">
                     <div
-                      className={`w-[15px] h-[15px] rounded-[4px] flex items-center justify-center transition-all shrink-0 border ${
+                      className={`w-[15px] h-[15px] rounded-[4px] flex items-center justify-center transition shrink-0 border ${
                         isSelected
                           ? "bg-text-primary border-text-primary text-bg-primary"
                           : "border-border-secondary bg-border-alpha-14 group-hover:border-text-secondary"

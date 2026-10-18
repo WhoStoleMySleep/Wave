@@ -480,7 +480,7 @@ export default function LibraryPage() {
             hasCustomBg
               ? "apple-glass-prominent"
               : "bg-btn-primary-bg text-btn-primary-text"
-          } hover:opacity-95 active:scale-[0.92] transition-all border-0 cursor-pointer select-none`}
+          } hover:opacity-95 active:scale-[0.92] transition border-0 cursor-pointer select-none`}
         >
           <AddLine size={22} />
         </button>

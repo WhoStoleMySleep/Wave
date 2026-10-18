@@ -27,7 +27,7 @@ import { useIsMobile } from "@/shared/hooks";
 const MOBILE_WIDTH = "w-[min(calc(100vw-48px),380px)]";
 
 const iconButtonClass =
-  "inline-flex h-[28px] w-[28px] items-center justify-center text-white opacity-70 transition-all duration-150 ease-out hover:opacity-100 active:scale-[0.94] shrink-0 border-none bg-transparent cursor-pointer";
+  "inline-flex h-[28px] w-[28px] items-center justify-center text-white opacity-70 transition duration-150 ease-out hover:opacity-100 active:scale-[0.94] shrink-0 border-none bg-transparent cursor-pointer";
 
 function PlayPauseIcon({ status, size = 22 }: { status: string; size?: number }) {
   if (status === "loading") {
@@ -115,7 +115,7 @@ export function PlayerUiElements({
           <button
             type="button"
             aria-label={isLiked ? t("player.saved_where") : t("player.save")}
-            className={`relative inline-flex h-[30px] w-[30px] items-center justify-center rounded-full transition-all duration-200 ease-out active:scale-[0.92] bg-black/40 backdrop-blur-md border-none ${
+            className={`relative inline-flex h-[30px] w-[30px] items-center justify-center rounded-full transition duration-200 ease-out active:scale-[0.92] bg-black/40 backdrop-blur-md border-none ${
               isLiked
                 ? "text-white hover:bg-black/60"
                 : "text-white/70 hover:text-white hover:bg-black/60"
@@ -228,7 +228,7 @@ export function PlayerUiElements({
           type="button"
           aria-label={player.status === "playing" ? "Pause" : "Play"}
           onClick={() => void playerEngine.togglePlayPause()}
-          className={`inline-flex ${isMobile ? "h-[64px] w-[64px]" : "h-[36px] w-[36px]"} items-center justify-center text-white opacity-85 transition-all duration-150 ease-out hover:opacity-100 active:scale-[0.94] shrink-0 border-none bg-transparent cursor-pointer`}
+          className={`inline-flex ${isMobile ? "h-[64px] w-[64px]" : "h-[36px] w-[36px]"} items-center justify-center text-white opacity-85 transition duration-150 ease-out hover:opacity-100 active:scale-[0.94] shrink-0 border-none bg-transparent cursor-pointer`}
         >
           <PlayPauseIcon status={player.status} size={isMobile ? 40 : 22} />
         </button>

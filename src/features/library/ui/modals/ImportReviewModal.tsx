@@ -370,7 +370,7 @@ export default function ImportReviewModal() {
                       width: "100%",
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
-                    className={`flex flex-col gap-[10px] p-[12px] rounded-lg border transition-all ${
+                    className={`flex flex-col gap-[10px] p-[12px] rounded-lg border transition ${
                       isApproved
                         ? "bg-bg-elevated border-border-primary/80"
                         : "bg-bg-elevated/50 border-border-primary/40 opacity-75 hover:opacity-100"
@@ -485,7 +485,7 @@ export default function ImportReviewModal() {
                             <button
                               type="button"
                               onClick={() => toggleDecision(item.id, "approve")}
-                              className={`inline-flex items-center justify-center gap-[4px] px-[10px] py-[5px] rounded-md text-[12px] font-[500] transition-all duration-150 cursor-pointer border active:scale-[0.96] ${
+                              className={`inline-flex items-center justify-center gap-[4px] px-[10px] py-[5px] rounded-md text-[12px] font-[500] transition duration-150 cursor-pointer border active:scale-[0.96] ${
                                 isApproved
                                   ? "bg-btn-primary-bg text-btn-primary-text border-transparent"
                                   : "bg-transparent text-text-secondary border-border-primary hover:bg-border-alpha-14 hover:text-text-primary"
@@ -497,7 +497,7 @@ export default function ImportReviewModal() {
                             <button
                               type="button"
                               onClick={() => toggleDecision(item.id, "deny")}
-                              className={`inline-flex items-center justify-center gap-[4px] px-[10px] py-[5px] rounded-md text-[12px] font-[500] transition-all duration-150 cursor-pointer border active:scale-[0.96] ${
+                              className={`inline-flex items-center justify-center gap-[4px] px-[10px] py-[5px] rounded-md text-[12px] font-[500] transition duration-150 cursor-pointer border active:scale-[0.96] ${
                                 !isApproved
                                   ? "bg-border-alpha-14 text-text-primary border-border-primary"
                                   : "bg-transparent text-text-tertiary border-transparent hover:text-text-secondary"

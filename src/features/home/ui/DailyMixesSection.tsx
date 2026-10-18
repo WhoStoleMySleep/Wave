@@ -121,7 +121,7 @@ function DailyMixCard({ mix }: DailyMixCardProps) {
             alt={mix.title}
             fill
             sizes="175px"
-            className={`object-cover transition-all duration-300 group-hover:brightness-[1.15] ${
+            className={`object-cover transition duration-300 group-hover:brightness-[1.15] ${
               imageLoaded ? "opacity-100" : "opacity-0"
             }`}
             onLoad={() => setImageLoaded(true)}

@@ -147,7 +147,7 @@ function TrackCard({
             alt={item.item.title}
             fill
             sizes="175px"
-            className={`object-cover transition-all duration-300 group-hover:brightness-[1.15] ${
+            className={`object-cover transition duration-300 group-hover:brightness-[1.15] ${
               imageLoaded ? "opacity-100" : "opacity-0"
             }`}
             onLoad={() => setImageLoaded(true)}
@@ -249,7 +249,7 @@ function AlbumCard({
             alt={item.item.title}
             fill
             sizes="175px"
-            className={`object-cover transition-all duration-300 group-hover:brightness-[1.15] ${
+            className={`object-cover transition duration-300 group-hover:brightness-[1.15] ${
               imageLoaded ? "opacity-100" : "opacity-0"
             }`}
             onLoad={() => setImageLoaded(true)}
@@ -347,7 +347,7 @@ function PlaylistCard({
             alt={item.item.title}
             fill
             sizes="175px"
-            className={`object-cover transition-all duration-300 group-hover:brightness-[1.15] ${
+            className={`object-cover transition duration-300 group-hover:brightness-[1.15] ${
               imageLoaded ? "opacity-100" : "opacity-0"
             }`}
             onLoad={() => setImageLoaded(true)}
@@ -428,7 +428,7 @@ function ArtistCard({ item }: { item: PopularItem & { type: "artist" } }) {
             alt={item.item.name}
             fill
             sizes="175px"
-            className={`object-cover transition-all duration-300 group-hover:brightness-[1.15] ${
+            className={`object-cover transition duration-300 group-hover:brightness-[1.15] ${
               imageLoaded ? "opacity-100" : "opacity-0"
             }`}
             onLoad={() => setImageLoaded(true)}

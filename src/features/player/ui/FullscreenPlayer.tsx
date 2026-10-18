@@ -347,7 +347,7 @@ export function FullscreenPlayer({
         />
         {kawarpSrc && (
           <div
-            className="absolute inset-0 bg-cover bg-center filter blur-3xl scale-110 opacity-70 pointer-events-none"
+            className="absolute left-1/2 top-1/2 h-[30%] w-[30%] -translate-x-1/2 -translate-y-1/2 scale-[3.7] bg-cover bg-center blur-[16px] opacity-70 pointer-events-none"
             style={{ backgroundImage: `url(${kawarpSrc})` }}
           />
         )}
@@ -394,7 +394,7 @@ export function FullscreenPlayer({
             }}
           >
             <AnimatePresence initial={false}>
-              {hasLyrics && (
+              {hasLyrics && effectsReady && (
                 <motion.div
                   key={`lyrics-${currentTrackId}`}
                   initial={{ opacity: 0 }}
@@ -489,7 +489,7 @@ export function FullscreenPlayer({
         onClick={onClose}
         data-no-window-drag
         style={isMobile ? { top: "calc(env(safe-area-inset-top) + 12px)" } : undefined}
-        className={`absolute top-[12px] left-[12px] z-30 inline-flex ${isMobile ? "h-[40px] w-[40px]" : "h-[32px] w-[32px]"} items-center justify-center rounded-lg border-none bg-black/50 backdrop-blur-xl text-white/80 hover:text-white hover:bg-white/10 active:scale-[0.94] transition-all cursor-pointer select-none pointer-events-auto`}
+        className={`absolute top-[12px] left-[12px] z-30 inline-flex ${isMobile ? "h-[40px] w-[40px]" : "h-[32px] w-[32px]"} items-center justify-center rounded-lg border-none bg-black/50 backdrop-blur-xl text-white/80 hover:text-white hover:bg-white/10 active:scale-[0.94] transition cursor-pointer select-none pointer-events-auto`}
       >
         <DownLine size={18} />
       </button>
@@ -517,7 +517,7 @@ export function FullscreenPlayer({
             aria-label={t("player.flow")}
             aria-pressed={mobilePane === "flow"}
             onClick={() => togglePane("flow")}
-            className={`absolute right-[60px] z-30 inline-flex h-[40px] w-[40px] items-center justify-center rounded-lg border-none backdrop-blur-xl active:scale-[0.94] transition-all ${
+            className={`absolute right-[60px] z-30 inline-flex h-[40px] w-[40px] items-center justify-center rounded-lg border-none backdrop-blur-xl active:scale-[0.94] transition ${
               mobilePane === "flow" ? "bg-white/20 text-white" : "bg-black/50 text-white/80"
             }`}
             style={{ top: "calc(env(safe-area-inset-top) + 12px)" }}
@@ -529,7 +529,7 @@ export function FullscreenPlayer({
             aria-label={t("player.lyrics")}
             aria-pressed={mobileLyrics}
             onClick={() => togglePane("lyrics")}
-            className="absolute right-[12px] z-30 inline-flex h-[40px] w-[40px] items-center justify-center rounded-lg border-none bg-black/50 backdrop-blur-xl text-white/80 active:scale-[0.94] transition-all"
+            className="absolute right-[12px] z-30 inline-flex h-[40px] w-[40px] items-center justify-center rounded-lg border-none bg-black/50 backdrop-blur-xl text-white/80 active:scale-[0.94] transition"
             style={{ top: "calc(env(safe-area-inset-top) + 12px)" }}
           >
             {mobileLyrics ? <Mic2Fill size={20} /> : <Mic2Line size={20} />}

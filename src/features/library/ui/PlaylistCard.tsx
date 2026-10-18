@@ -28,7 +28,7 @@ function CoverCollage({ urls, title }: { urls: string[]; title: string }) {
         alt={title}
         fill
         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
-        className="object-cover transition-all duration-300 group-hover:brightness-[1.15]"
+        className="object-cover transition duration-300 group-hover:brightness-[1.15]"
         draggable={false}
         unoptimized
       />
@@ -51,7 +51,7 @@ function CoverCollage({ urls, title }: { urls: string[]; title: string }) {
               alt={`${title} cover ${i + 1}`}
               fill
               sizes="(max-width: 768px) 25vw, 12vw"
-              className="object-cover transition-all duration-300 group-hover:brightness-[1.15]"
+              className="object-cover transition duration-300 group-hover:brightness-[1.15]"
               draggable={false}
               unoptimized
             />
@@ -119,7 +119,7 @@ function PlaylistCard({
               alt={title}
               fill
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
-              className="object-cover transition-all duration-300 group-hover:brightness-[1.15]"
+              className="object-cover transition duration-300 group-hover:brightness-[1.15]"
               draggable={false}
               unoptimized
             />

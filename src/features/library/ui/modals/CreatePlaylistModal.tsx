@@ -165,7 +165,7 @@ export default function CreatePlaylistModal() {
               key={item.id}
               type="button"
               onClick={() => setTab(item.id)}
-              className={`flex-1 h-[30px] rounded-md text-[13px] font-[500] transition-all cursor-pointer border-none ${
+              className={`flex-1 h-[30px] rounded-md text-[13px] font-[500] transition cursor-pointer border-none ${
                 tab === item.id
                   ? "bg-bg-primary text-text-primary"
                   : "bg-transparent text-text-secondary hover:text-text-primary"

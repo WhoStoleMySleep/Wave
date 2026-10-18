@@ -211,7 +211,7 @@ function LibraryItemRow({ item }: { item: LibraryItemViewModel }) {
               <button
                 type="button"
                 aria-label={t("common.more_options")}
-                className="rounded-md bg-transparent border-0 p-0 text-text-primary transition-all duration-200 active:scale-[0.96] flex items-center justify-center cursor-pointer opacity-70 hover:opacity-100"
+                className="rounded-md bg-transparent border-0 p-0 text-text-primary transition duration-200 active:scale-[0.96] flex items-center justify-center cursor-pointer opacity-70 hover:opacity-100"
                 onClick={(e) => {
                   e.stopPropagation();
                   setMenuOpen(!menuOpen);
@@ -267,7 +267,7 @@ function EmptyLibraryState({
         <button
           type="button"
           onClick={() => useModalStore.getState().openCreatePlaylist()}
-          className="inline-flex items-center gap-[6px] !h-[36px] rounded-lg px-[16px] text-[13px] font-[500] bg-btn-primary-bg text-btn-primary-text hover:opacity-90 active:scale-[0.96] transition-all border-0 cursor-pointer mt-[2px]"
+          className="inline-flex items-center gap-[6px] !h-[36px] rounded-lg px-[16px] text-[13px] font-[500] bg-btn-primary-bg text-btn-primary-text hover:opacity-90 active:scale-[0.96] transition border-0 cursor-pointer mt-[2px]"
           style={{ fontFamily: "var(--font-inter), sans-serif" }}
         >
           <AddLine size={16} />
@@ -291,7 +291,7 @@ function EmptyLibraryState({
         <button
           type="button"
           onClick={() => useModalStore.getState().openSearch()}
-          className="inline-flex items-center gap-[6px] !h-[36px] rounded-lg px-[16px] text-[13px] font-[500] bg-bg-elevated border border-border-primary text-text-primary hover:bg-border-alpha-14 active:scale-[0.96] transition-all cursor-pointer mt-[2px]"
+          className="inline-flex items-center gap-[6px] !h-[36px] rounded-lg px-[16px] text-[13px] font-[500] bg-bg-elevated border border-border-primary text-text-primary hover:bg-border-alpha-14 active:scale-[0.96] transition cursor-pointer mt-[2px]"
           style={{ fontFamily: "var(--font-inter), sans-serif" }}
         >
           <Search3Fill size={15} />
@@ -314,7 +314,7 @@ function EmptyLibraryState({
       <button
         type="button"
         onClick={() => useModalStore.getState().openSearch()}
-        className="inline-flex items-center gap-[6px] !h-[36px] rounded-lg px-[16px] text-[13px] font-[500] bg-bg-elevated border border-border-primary text-text-primary hover:bg-border-alpha-14 active:scale-[0.96] transition-all cursor-pointer mt-[2px]"
+        className="inline-flex items-center gap-[6px] !h-[36px] rounded-lg px-[16px] text-[13px] font-[500] bg-bg-elevated border border-border-primary text-text-primary hover:bg-border-alpha-14 active:scale-[0.96] transition cursor-pointer mt-[2px]"
         style={{ fontFamily: "var(--font-inter), sans-serif" }}
       >
         <Search3Fill size={15} />

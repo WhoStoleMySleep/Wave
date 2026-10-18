@@ -705,7 +705,7 @@ function RightDrawer({ activeTab, onTabChange, onClose }: RightDrawerProps) {
                 title={t("common.back") || "Back"}
                 aria-label={t("common.back") || "Back"}
                 data-no-window-drag
-                className={`group inline-flex h-[32px] shrink-0 items-center gap-[6px] rounded-md px-[10px] active:scale-[0.94] transition-all cursor-pointer select-none pointer-events-auto text-[13px] font-[500] border-0 !border-none ${
+                className={`group inline-flex h-[32px] shrink-0 items-center gap-[6px] rounded-md px-[10px] active:scale-[0.94] transition cursor-pointer select-none pointer-events-auto text-[13px] font-[500] border-0 !border-none ${
                   hasCustomBg
                     ? "apple-glass-pill !border-none"
                     : "bg-bg-panel/85 backdrop-blur-xl text-text-primary hover:bg-bg-panel border-0 !border-none"

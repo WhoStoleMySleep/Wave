@@ -846,7 +846,7 @@ function NotificationCard({
             resolvedAction.onClick?.();
             dismiss();
           }}
-          className="inline-flex shrink-0 items-center justify-center gap-[4px] px-[10px] h-[28px] rounded-lg text-[12.5px] font-[600] bg-border-alpha-14 hover:bg-border-alpha-33 text-text-primary active:scale-[0.96] transition-all border-0 cursor-pointer"
+          className="inline-flex shrink-0 items-center justify-center gap-[4px] px-[10px] h-[28px] rounded-lg text-[12.5px] font-[600] bg-border-alpha-14 hover:bg-border-alpha-33 text-text-primary active:scale-[0.96] transition border-0 cursor-pointer"
         >
           {resolvedAction.icon && <span>{resolvedAction.icon}</span>}
           <span>{resolvedAction.label}</span>
