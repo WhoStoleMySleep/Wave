@@ -228,7 +228,7 @@ export default function LoginPage() {
                     key={item.id}
                     type="button"
                     onClick={() => selectMode(item.id)}
-                    className={`h-[30px] flex-1 cursor-pointer rounded-md border-none text-[13px] font-[500] transition-all ${
+                    className={`h-[30px] flex-1 cursor-pointer rounded-md border-none text-[13px] font-[500] transition ${
                       mode === item.id
                         ? "bg-bg-primary text-text-primary"
                         : "bg-transparent text-text-secondary hover:text-text-primary"

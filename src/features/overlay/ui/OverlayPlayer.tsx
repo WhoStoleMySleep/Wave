@@ -380,7 +380,7 @@ export function OverlayPlayer() {
                 e.stopPropagation();
                 sendAction({ type: "prev" });
               }}
-              className="flex h-[26px] w-[26px] items-center justify-center rounded-lg border-0 bg-transparent text-white/60 hover:text-white active:scale-90 transition-all outline-none cursor-pointer"
+              className="flex h-[26px] w-[26px] items-center justify-center rounded-lg border-0 bg-transparent text-white/60 hover:text-white active:scale-90 transition outline-none cursor-pointer"
               title="Previous"
             >
               <SkipPrevious size={16} weight="Bold" />
@@ -397,7 +397,7 @@ export function OverlayPlayer() {
                 e.stopPropagation();
                 sendAction({ type: "togglePlay" });
               }}
-              className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full bg-white text-black shadow transition-all duration-150 ease-out hover:scale-105 active:scale-95 border-none cursor-pointer"
+              className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full bg-white text-black shadow transition duration-150 ease-out hover:scale-105 active:scale-95 border-none cursor-pointer"
               title={isPlaying ? "Pause" : "Play"}
             >
               {isPlaying ? (
@@ -418,7 +418,7 @@ export function OverlayPlayer() {
                 e.stopPropagation();
                 sendAction({ type: "next" });
               }}
-              className="flex h-[26px] w-[26px] items-center justify-center rounded-lg border-0 bg-transparent text-white/60 hover:text-white active:scale-90 transition-all outline-none cursor-pointer"
+              className="flex h-[26px] w-[26px] items-center justify-center rounded-lg border-0 bg-transparent text-white/60 hover:text-white active:scale-90 transition outline-none cursor-pointer"
               title="Next"
             >
               <SkipNext size={16} weight="Bold" />

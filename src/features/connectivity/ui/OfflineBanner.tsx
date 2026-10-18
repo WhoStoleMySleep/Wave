@@ -34,7 +34,7 @@ export default function OfflineBanner() {
           className="pointer-events-none absolute inset-x-0 bottom-3 z-[35] flex justify-center px-3"
         >
           <div
-            className="pointer-events-auto flex h-[34px] items-center gap-[6px] rounded-full border border-bg-elevated bg-bg-panel/90 pl-[12px] pr-[4px] text-[13px] text-text-secondary shadow-sm backdrop-blur-md"
+            className="pointer-events-auto flex h-[34px] items-center gap-[6px] rounded-full border border-bg-elevated bg-bg-panel/90 pl-[12px] pr-[4px] text-[13px] text-text-secondary shadow-sm"
             style={{ fontFamily: "var(--font-inter), sans-serif" }}
           >
             <WifiOffLine size={15} className="shrink-0 text-text-tertiary" />

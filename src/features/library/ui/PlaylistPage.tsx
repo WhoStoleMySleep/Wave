@@ -53,9 +53,13 @@ interface TrackItemProps {
   playlistTitle: string;
   playlistCoverUrl: string;
   allTracks: Track[];
-  style?: React.CSSProperties;
+  index: number;
+  top: number;
+  size: number;
+  animated: boolean;
+  hidden: boolean;
   showReorderHandle?: boolean;
-  onGrabStart?: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onGrab?: (index: number, track: Track, e: React.PointerEvent<HTMLDivElement>) => void;
 }
 
 const TrackItem = memo(function TrackItem({
@@ -64,9 +68,13 @@ const TrackItem = memo(function TrackItem({
   playlistTitle,
   playlistCoverUrl,
   allTracks,
-  style,
+  index,
+  top,
+  size,
+  animated,
+  hidden,
   showReorderHandle,
-  onGrabStart,
+  onGrab,
 }: TrackItemProps) {
   const handlePlay = useCallback(() => {
     if (typeof window !== "undefined" && window.__waveWasDragging) return;
@@ -78,8 +86,26 @@ const TrackItem = memo(function TrackItem({
     );
   }, [track, allTracks, playlistId, playlistTitle, playlistCoverUrl]);
 
+  const handleGrabStart = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => onGrab?.(index, track, e),
+    [onGrab, index, track],
+  );
+
   return (
-    <div style={style} data-reorder-item>
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: `${size}px`,
+        transform: `translateY(${top}px)`,
+        transition: animated ? "transform 180ms cubic-bezier(0.2, 0, 0, 1)" : undefined,
+        opacity: hidden ? 0 : 1,
+        zIndex: 1,
+      }}
+      data-reorder-item
+    >
       <SongCardWithMenu
         id={track.id}
         title={track.title}
@@ -91,7 +117,7 @@ const TrackItem = memo(function TrackItem({
         playlistItemId={track.playlistItemId}
         playlistTitle={playlistTitle}
         showReorderHandle={showReorderHandle}
-        onGrabStart={onGrabStart}
+        onGrabStart={onGrab ? handleGrabStart : undefined}
         duration={
           track.durationMs
             ? `${Math.floor(track.durationMs / 60000)}:${String(
@@ -359,7 +385,7 @@ function LibraryPlaylistContent() {
     getScrollElement: () => (isMobile ? layoutRef.current : scrollRef.current),
     scrollMargin: listScrollMargin,
     estimateSize: () => 64,
-    overscan: 25,
+    overscan: 8,
     getItemKey: (index) =>
       currentTracks[index]?.playlistItemId ??
       currentTracks[index]?.id ??
@@ -526,7 +552,7 @@ function LibraryPlaylistContent() {
         title={t("common.back")}
         aria-label={t("common.back")}
         data-no-window-drag
-        className={`absolute top-[12px] left-[32px] max-md:left-[16px] z-20 group inline-flex h-[32px] shrink-0 items-center gap-[6px] rounded-md px-[10px] active:scale-[0.94] transition-all cursor-pointer select-none pointer-events-auto text-[13px] font-[500] border-0 !border-none ${
+        className={`absolute top-[12px] left-[32px] max-md:left-[16px] z-20 group inline-flex h-[32px] shrink-0 items-center gap-[6px] rounded-md px-[10px] active:scale-[0.94] transition cursor-pointer select-none pointer-events-auto text-[13px] font-[500] border-0 !border-none ${
           hasCustomBg
             ? "apple-glass-pill !border-none"
             : "bg-bg-panel/85 backdrop-blur-xl text-text-primary hover:bg-bg-panel border-0 !border-none"
@@ -952,25 +978,13 @@ function LibraryPlaylistContent() {
                       playlistTitle={viewData.title}
                       playlistCoverUrl={viewData.coverUrl}
                       allTracks={currentTracks}
+                      index={index}
+                      top={virtualRow.start - listScrollMargin + shiftY}
+                      size={virtualRow.size}
+                      animated={isDragging}
+                      hidden={isThisDragged}
                       showReorderHandle={canReorder}
-                      onGrabStart={
-                        canReorder && !isDragging
-                          ? (e) => handleCardGrab(index, track, e)
-                          : undefined
-                      }
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start - listScrollMargin + shiftY}px)`,
-                        transition: isDragging
-                          ? "transform 180ms cubic-bezier(0.2, 0, 0, 1)"
-                          : undefined,
-                        opacity: isThisDragged ? 0 : 1,
-                        zIndex: 1,
-                      }}
+                      onGrab={canReorder && !isDragging ? handleCardGrab : undefined}
                     />
                   );
                 })}

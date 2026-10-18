@@ -72,7 +72,7 @@ function AlbumCard({
               alt={title}
               fill
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
-              className="object-cover transition-all duration-300 group-hover:brightness-[1.15]"
+              className="object-cover transition duration-300 group-hover:brightness-[1.15]"
             />
           )}
         </div>

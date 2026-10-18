@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, memo } from "react";
 import { motion } from "framer-motion";
+import { sliderFillTransform } from "@/shared/ui/sliderFill";
 import { VolumeCross, VolumeSmall, VolumeLoud } from "@solar-icons/react";
 import { usePlayerStore } from "../store/playerStore";
 import { playerEngine } from "../engine/playerEngine";
@@ -224,12 +225,12 @@ export const VolumePicker = memo(function VolumePicker({
           } ${trackClassName}`}
         >
           <div
-            className={`absolute inset-y-0 left-0 rounded-full ${
+            className={`absolute inset-0 rounded-full ${
               !fillColor && !fillClassName ? "bg-text-primary" : ""
-            } transition-[width] ease-out ${
+            } transition-transform ease-out ${
               isDragging ? "duration-0" : "duration-100"
             } ${fillClassName}`}
-            style={{ width: `${percentage}%`, ...(fillColor ? { backgroundColor: fillColor } : {}) }}
+            style={{ transform: sliderFillTransform(percentage), ...(fillColor ? { backgroundColor: fillColor } : {}) }}
           />
         </motion.div>
       </div>

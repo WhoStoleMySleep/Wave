@@ -50,7 +50,7 @@ export default function ImportingPlaylistCard({
     return (
       <div
         onClick={handleClick}
-        className={`w-full flex items-center justify-between rounded-md p-[8px] select-none transition-all duration-150 ${
+        className={`w-full flex items-center justify-between rounded-md p-[8px] select-none transition duration-150 ${
           isAwaiting
             ? "cursor-pointer hover:bg-border-alpha-14 opacity-90"
             : "cursor-default opacity-70"
@@ -104,7 +104,7 @@ export default function ImportingPlaylistCard({
   return (
     <div
       onClick={handleClick}
-      className={`group flex flex-col gap-[8px] select-none transition-all ${
+      className={`group flex flex-col gap-[8px] select-none transition ${
         isAwaiting
           ? "cursor-pointer opacity-90 hover:opacity-100"
           : "cursor-default opacity-70"
@@ -122,7 +122,7 @@ export default function ImportingPlaylistCard({
           <div className="absolute bottom-[8px] left-[8px] right-[8px]">
             <div className="h-[3px] w-full rounded-full bg-border-alpha-14 overflow-hidden">
               <div
-                className="h-full bg-text-primary transition-all duration-300 rounded-full"
+                className="h-full bg-text-primary transition duration-300 rounded-full"
                 style={{
                   width: `${Math.min(
                     100,

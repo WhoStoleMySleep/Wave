@@ -124,7 +124,7 @@ describe("KawarpEngine", () => {
     await engine.loadImage("https://cdn/a.jpg");
     engine.start();
     gl.drawArrays.mockClear();
-    [20.8, 41.7, 62.5, 83.3].forEach((timestamp) => loop(timestamp));
+    [16.7, 33.3, 50, 66.7].forEach((timestamp) => loop(timestamp));
     expect(gl.drawArrays.mock.calls.length).toBe(4);
   });
 

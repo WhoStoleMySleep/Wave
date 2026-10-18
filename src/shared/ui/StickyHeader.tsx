@@ -56,7 +56,7 @@ export function StickyHeader({
               title={t("common.back")}
               aria-label={t("common.back")}
               data-no-window-drag
-              className={`group inline-flex h-[32px] shrink-0 items-center gap-[6px] rounded-md px-[10px] active:scale-[0.94] transition-all cursor-pointer select-none pointer-events-auto text-[13px] font-[500] border-0 !border-none ${
+              className={`group inline-flex h-[32px] shrink-0 items-center gap-[6px] rounded-md px-[10px] active:scale-[0.94] transition cursor-pointer select-none pointer-events-auto text-[13px] font-[500] border-0 !border-none ${
                 hasCustomBg
                   ? "apple-glass-pill !border-none"
                   : "bg-bg-panel/85 backdrop-blur-xl text-text-primary hover:bg-bg-panel border-0 !border-none"
@@ -74,7 +74,7 @@ export function StickyHeader({
           {hasMetadata && (
             <div
               data-no-window-drag
-              className={`inline-flex items-center gap-[8px] h-[32px] pl-[4px] pr-[12px] rounded-md min-w-0 max-w-[calc(100vw-360px)] max-md:max-w-[calc(100vw-180px)] select-none transition-all duration-200 ease-out ${
+              className={`inline-flex items-center gap-[8px] h-[32px] pl-[4px] pr-[12px] rounded-md min-w-0 max-w-[calc(100vw-360px)] max-md:max-w-[calc(100vw-180px)] select-none transition duration-200 ease-out ${
                 hasCustomBg
                   ? "apple-glass-pill"
                   : "bg-bg-panel/85 backdrop-blur-xl text-text-primary"

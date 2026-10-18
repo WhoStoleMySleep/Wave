@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, memo } from "react";
 import { motion } from "framer-motion";
+import { sliderFillTransform } from "./sliderFill";
 
 export interface SliderProps {
   label?: React.ReactNode;
@@ -168,10 +169,10 @@ export const Slider = memo(function Slider({
           }`}
         >
           <div
-            className={`absolute inset-y-0 left-0 rounded-full bg-text-primary transition-[width] ease-out ${
+            className={`absolute inset-0 rounded-full bg-text-primary transition-transform ease-out ${
               isDragging ? "duration-0" : "duration-100"
             }`}
-            style={{ width: `${percentage}%` }}
+            style={{ transform: sliderFillTransform(percentage) }}
           />
         </motion.div>
       </div>

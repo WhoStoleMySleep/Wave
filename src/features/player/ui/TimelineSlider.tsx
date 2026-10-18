@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, memo } from "react";
 import { motion } from "framer-motion";
+import { sliderFillTransform } from "@/shared/ui/sliderFill";
 import { usePlaybackPosition } from "../hooks/usePlayerState";
+import { usePlaybackGlide } from "../hooks/usePlaybackGlide";
 
 export interface TimelineSliderProps {
   positionMs: number;
@@ -53,6 +55,7 @@ export const TimelineSlider = memo(function TimelineSlider({
   const progress =
     duration > 0 ? Math.min(1, Math.max(0, currentPosition / duration)) : 0;
   const percentage = progress * 100;
+  const glide = usePlaybackGlide(currentPosition, isDragging);
 
   const calculatePositionFromPointer = useCallback(
     (clientX: number): number => {
@@ -191,11 +194,10 @@ export const TimelineSlider = memo(function TimelineSlider({
           className={`relative w-full rounded-full overflow-hidden origin-center ${baseTrackHeights} ${trackClassName}`}
         >
           <div
-            className={`absolute inset-y-0 left-0 rounded-full transition-[width] ease-out ${
-              isDragging ? "duration-0" : "duration-100"
-            } ${fillClassName || "bg-text-primary"}`}
+            className={`absolute inset-0 rounded-full ${fillClassName || "bg-text-primary"}`}
             style={{
-              width: `${percentage}%`,
+              transform: sliderFillTransform(percentage),
+              transition: glide,
               ...(fillColor ? { backgroundColor: fillColor } : {}),
             }}
           />
@@ -230,15 +232,16 @@ export function PlaybackProgressFill({
   scrubRatio?: number | null;
 }) {
   const positionMs = usePlaybackPosition();
+  const glide = usePlaybackGlide(positionMs, scrubRatio !== null);
   const progress =
     scrubRatio ?? (durationMs > 0 ? Math.min(1, Math.max(0, positionMs / durationMs)) : 0);
   return (
     <div
-      className="absolute inset-y-0 left-0 z-0 pointer-events-none"
+      className="absolute inset-0 z-0 pointer-events-none origin-left"
       style={{
         backgroundColor: color,
-        width: `${progress * 100}%`,
-        transition: scrubRatio !== null ? "none" : "width 200ms cubic-bezier(0.22, 1, 0.36, 1)",
+        transform: `scaleX(${progress})`,
+        transition: glide,
       }}
     />
   );

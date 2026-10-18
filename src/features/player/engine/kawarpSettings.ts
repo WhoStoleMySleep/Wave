@@ -23,7 +23,7 @@ export const DEFAULT_KAWARP_SETTINGS: KawarpSettings = {
   tintIntensity: 0.15,
   dithering: 0.012,
   scale: 1.2,
-  maxFps: 24,
+  maxFps: 30,
 };
 
 export function resolveKawarpSettings(options: KawarpOptions = {}): KawarpSettings {
