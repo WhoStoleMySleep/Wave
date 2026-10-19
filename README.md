@@ -6,7 +6,7 @@
 
 A desktop and Android music player built with Tauri, React and Rust.
 
-![Wave](.github/assets/demo.gif)
+![Wave](.github/assets/home.jpg)
 
 </div>
 
@@ -21,8 +21,8 @@ A desktop and Android music player built with Tauri, React and Rust.
 - **Android** — the same app with a native media notification and background playback.
 
 <p align="center">
-  <img src=".github/assets/home.png" width="49%" alt="Home">
-  <img src=".github/assets/lyrics_preview.png" width="49%" alt="Lyrics">
+  <img src=".github/assets/lyrics.jpg" width="49%" alt="Fullscreen player with synced lyrics">
+  <img src=".github/assets/playlist.jpg" width="49%" alt="Playlist">
 </p>
 
 ## Stack
