@@ -68,7 +68,7 @@ export default function HistoryPage() {
           type="button"
           onClick={loadMore}
           disabled={isLoading}
-          className="mt-[20px] mx-auto block h-[36px] px-[18px] rounded-full border-0 bg-border-alpha-14 text-[13px] font-[500] text-text-primary enabled:cursor-pointer enabled:hover:bg-border-alpha-20 disabled:opacity-50"
+          className="mt-[20px] mx-auto block h-[36px] px-[18px] rounded-full border-0 bg-border-alpha-14 text-[13px] font-[500] text-text-primary enabled:cursor-pointer enabled:hover:bg-border-alpha-33 disabled:opacity-50"
           style={font}
         >
           {t("stats.show_more")}
@@ -94,12 +94,12 @@ function HistoryRow({ item, locale, t }: { item: ListeningHistoryItem; locale: s
       meta={
         <span className="flex items-center gap-[10px] text-[13px] text-text-tertiary whitespace-nowrap" style={font}>
           {item.loopCount > 0 && (
-            <span className="flex items-center gap-[3px] text-sky-400" title={`×${item.loopCount + 1}`}>
+            <span className="flex items-center gap-[3px] text-accent-primary" title={`×${item.loopCount + 1}`}>
               <RepeatFill size={14} />×{item.loopCount + 1}
             </span>
           )}
           {item.skipped ? (
-            <span className="flex items-center gap-[3px] text-rose-400" title={t("stats.skipped")}>
+            <span className="flex items-center gap-[3px] text-accent-warning" title={t("stats.skipped")}>
               <SkipForwardFill size={14} />
               <span className="max-md:hidden">{t("stats.skipped")}</span>
             </span>

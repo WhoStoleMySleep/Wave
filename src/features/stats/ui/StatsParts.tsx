@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import CoverImage from "@/features/covers/ui/CoverImage";
 import { useIsContentTransparent } from "@/features/settings/store/customizationStore";
 import { StickyHeader } from "@/shared/ui";
@@ -9,6 +9,13 @@ export const font = { fontFamily: "var(--font-inter), sans-serif" } as const;
 const TITLE_AFTER_PX = 72;
 /** Stands in for the number inside a translated sentence, so the number can be styled apart. */
 const VALUE_MARK = "\u0000";
+
+/** A soft glow of the theme accent, centred at `x`/`y` percent of the box. */
+export function accentGlow(x: number, y: number, strength = 35): CSSProperties {
+  return {
+    backgroundImage: `radial-gradient(circle at ${x}% ${y}%, color-mix(in srgb, var(--accent-primary) ${strength}%, transparent), transparent 65%)`,
+  };
+}
 
 export function useCardClass(): string {
   const hasCustomBg = useIsContentTransparent();

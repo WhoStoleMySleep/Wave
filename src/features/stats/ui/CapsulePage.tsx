@@ -12,7 +12,7 @@ import { capsuleArtistIds, monthDays } from "../lib/capsule";
 import { formatNumber, formatWeek } from "../lib/format";
 import { currentMonth, monthId, monthName, parseMonth, periodLabel, recapPeriods, type PeriodKey } from "../lib/periods";
 import RecapStories from "./recap/RecapStories";
-import { ArtistAvatar, SkeletonBlock, StatsPage, font, useCardClass } from "./StatsParts";
+import { ArtistAvatar, SkeletonBlock, StatsPage, accentGlow, font, useCardClass } from "./StatsParts";
 
 type MonthKey = Extract<PeriodKey, { kind: "month" }>;
 
@@ -79,7 +79,7 @@ function MonthButton({ to, label, onSelect, children }: { to?: string; label: st
       title={label}
       disabled={!to}
       onClick={() => to && onSelect(to)}
-      className="w-[34px] h-[34px] inline-flex items-center justify-center rounded-full border-0 bg-border-alpha-14 text-text-primary transition-opacity disabled:opacity-30 enabled:cursor-pointer enabled:hover:bg-border-alpha-20"
+      className="w-[34px] h-[34px] inline-flex items-center justify-center rounded-full border-0 bg-border-alpha-14 text-text-primary transition-opacity disabled:opacity-30 enabled:cursor-pointer enabled:hover:bg-border-alpha-33"
     >
       {children}
     </button>
@@ -123,13 +123,13 @@ function CapsuleCards({ stats, month }: { stats: ListeningStats; month: MonthKey
   );
 }
 
-function CardHeading({ label, color }: { label: string; color: string }) {
+function CardHeading({ label }: { label: string }) {
   return (
     <div className="flex items-center justify-between gap-[8px]">
       <span className="text-[13px] text-text-secondary" style={font}>
         {label}
       </span>
-      <RightSmallLine size={18} className={`shrink-0 ${color}`} />
+      <RightSmallLine size={18} color="var(--text-tertiary)" className="shrink-0" />
     </div>
   );
 }
@@ -170,8 +170,8 @@ function TopArtistCard({ stats, month, coverUrl }: { stats: ListeningStats; mont
       to={`/capsule/artists?month=${monthId(month)}`}
       className={`${cardClass} p-[16px] flex flex-col gap-[4px] no-underline transition-transform active:scale-[0.98]`}
     >
-      <CardHeading label={t("stats.top_artist")} color="text-sky-400" />
-      <span className="truncate text-[20px] font-[700] text-sky-400" style={font}>
+      <CardHeading label={t("stats.top_artist")} />
+      <span className="truncate text-[20px] font-[700] text-text-primary" style={font}>
         {top.artist.name}
       </span>
       <ArtistAvatar name={top.artist.name} url={coverUrl} className="mt-[10px] w-full aspect-square" letterClass="text-[56px]" />
@@ -190,8 +190,8 @@ function TopSongCard({ stats, month }: { stats: ListeningStats; month: MonthKey 
       to={`/capsule/tracks?month=${monthId(month)}`}
       className={`${cardClass} p-[16px] flex flex-col gap-[4px] no-underline transition-transform active:scale-[0.98]`}
     >
-      <CardHeading label={t("stats.top_song")} color="text-amber-400" />
-      <span className="truncate text-[20px] font-[700] text-amber-400" style={font}>
+      <CardHeading label={t("stats.top_song")} />
+      <span className="truncate text-[20px] font-[700] text-text-primary" style={font}>
         {track.title}
       </span>
       <div className="relative mt-[10px] w-full aspect-square overflow-hidden rounded-lg bg-bg-panel">
@@ -287,7 +287,7 @@ function DiscoveryCard({ stat, coverUrl }: { stat: NonNullable<ListeningStats["d
     <section className={`${cardClass} p-[20px] flex items-center gap-[18px]`}>
       <ArtistLinkAvatar artist={stat.artist} url={coverUrl} className="!w-[96px]" />
       <div className="min-w-0">
-        <span className="text-[13px] text-emerald-400" style={font}>
+        <span className="text-[13px] text-accent-primary" style={font}>
           {t("stats.discovery_title")}
         </span>
         <h2 className="m-0 mt-[2px] truncate text-[22px] font-[700] tracking-[-0.02em] text-text-primary" style={font}>
@@ -301,22 +301,24 @@ function DiscoveryCard({ stat, coverUrl }: { stat: NonNullable<ListeningStats["d
   );
 }
 
-const RECAP_GRADIENTS = [
-  "from-indigo-600 via-violet-600 to-fuchsia-500",
-  "from-amber-500 via-orange-500 to-rose-500",
-  "from-emerald-500 via-teal-500 to-sky-600",
-  "from-sky-500 via-blue-600 to-indigo-700",
+/** Where each recap card's accent glow sits, so neighbours differ. */
+const RECAP_GLOWS: [number, number][] = [
+  [85, 10],
+  [10, 90],
+  [90, 85],
+  [15, 15],
 ];
 
 function RecapSection({ months, onOpen }: { months: string[]; onOpen: (period: PeriodKey) => void }) {
   const { t, locale } = useTranslation();
+  const cardClass = useCardClass();
   const periods = useMemo(() => recapPeriods(months, new Date()), [months]);
   if (periods.length === 0) return null;
   const seasonName = (season: string) => t(`stats.season.${season}`);
   return (
     <section className="mt-[12px]">
       <div className="flex items-center gap-[8px]">
-        <SparklesFill size={18} className="text-fuchsia-400" />
+        <SparklesFill size={18} color="var(--accent-primary)" />
         <h2 className="m-0 text-[19px] font-[600] tracking-tight text-text-primary" style={font}>
           {t("stats.recaps_title")}
         </h2>
@@ -330,14 +332,14 @@ function RecapSection({ months, onOpen }: { months: string[]; onOpen: (period: P
             key={`${key.kind}-${key.year}-${key.kind === "season" ? key.season : ""}`}
             type="button"
             onClick={() => onOpen(key)}
-            className={`relative aspect-square overflow-hidden rounded-2xl border-0 p-[14px] text-left cursor-pointer bg-gradient-to-br ${RECAP_GRADIENTS[index % RECAP_GRADIENTS.length]} transition-transform hover:scale-[1.02] active:scale-[0.98]`}
+            className={`${cardClass} relative aspect-square overflow-hidden border-0 p-[14px] text-left cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98]`}
           >
-            <span className="absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(255,255,255,0.35),transparent_55%)]" aria-hidden />
-            <span className="relative flex h-full flex-col justify-between text-white" style={font}>
-              <span className="text-[12px] font-[600] uppercase tracking-[0.08em] opacity-80">
+            <span className="absolute inset-0" style={accentGlow(...RECAP_GLOWS[index % RECAP_GLOWS.length], key.kind === "year" ? 45 : 30)} aria-hidden />
+            <span className="relative flex h-full flex-col justify-between" style={font}>
+              <span className="text-[12px] font-[600] uppercase tracking-[0.08em] text-accent-primary">
                 {inProgress ? t("stats.in_progress") : t("stats.recap.title")}
               </span>
-              <span className="text-[24px] font-[800] leading-[1.05] tracking-[-0.02em]">{periodLabel(key, locale, seasonName)}</span>
+              <span className="text-[24px] font-[800] leading-[1.05] tracking-[-0.02em] text-text-primary">{periodLabel(key, locale, seasonName)}</span>
             </span>
           </button>
         ))}
@@ -351,8 +353,8 @@ function HistoryLink() {
   const cardClass = useCardClass();
   return (
     <Link to="/history" className={`${cardClass} mt-[12px] p-[16px] flex items-center gap-[14px] no-underline transition-transform active:scale-[0.99]`}>
-      <span className="w-[40px] h-[40px] shrink-0 rounded-full bg-sky-500/15 flex items-center justify-center">
-        <TimeFill size={20} className="text-sky-400" />
+      <span className="w-[40px] h-[40px] shrink-0 rounded-full bg-accent-primary/10 flex items-center justify-center">
+        <TimeFill size={20} color="var(--accent-primary)" />
       </span>
       <span className="min-w-0 flex-1 flex flex-col">
         <span className="text-[15px] font-[500] text-text-primary" style={font}>
@@ -362,7 +364,7 @@ function HistoryLink() {
           {t("stats.history_subtitle")}
         </span>
       </span>
-      <RightSmallLine size={20} className="text-text-tertiary shrink-0" />
+      <RightSmallLine size={20} color="var(--text-tertiary)" className="shrink-0" />
     </Link>
   );
 }

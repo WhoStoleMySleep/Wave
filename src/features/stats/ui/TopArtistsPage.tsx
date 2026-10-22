@@ -27,7 +27,7 @@ export default function TopArtistsPage() {
             <HighlightedText
               translate={(value) => t("stats.artists_heading", { count: stats.artistCount, value })}
               value={formatNumber(stats.artistCount, locale)}
-              highlightClass="text-sky-400"
+              highlightClass="text-accent-primary"
             />
           </h1>
           <ol className="m-0 mt-[20px] p-0 list-none flex flex-col gap-[4px]">
@@ -39,7 +39,7 @@ export default function TopArtistsPage() {
                   onClick={() => navigate(`/artist?id=${encodeURIComponent(artist.id)}`)}
                   className="w-full flex items-center gap-[16px] rounded-xl border-0 bg-transparent px-[8px] py-[8px] text-left enabled:cursor-pointer enabled:hover:bg-border-alpha-14 transition-colors"
                 >
-                  <span className="w-[24px] shrink-0 text-center text-[17px] font-[600] text-sky-400" style={font}>
+                  <span className="w-[24px] shrink-0 text-center text-[17px] font-[600] text-accent-primary" style={font}>
                     {index + 1}
                   </span>
                   <ArtistAvatar name={artist.name} url={covers[artist.id]} className="w-[64px] h-[64px]" />

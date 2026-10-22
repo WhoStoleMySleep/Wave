@@ -30,13 +30,13 @@ export default function TopTracksPage() {
             <HighlightedText
               translate={(value) => t("stats.songs_heading", { count: stats.trackCount, value })}
               value={formatNumber(stats.trackCount, locale)}
-              highlightClass="text-amber-400"
+              highlightClass="text-accent-primary"
             />
           </h1>
           <ol className="m-0 mt-[20px] p-0 list-none flex flex-col gap-[2px]">
             {tracks.map((track, index) => (
               <li key={track.id} className="flex items-center gap-[8px]">
-                <span className="w-[28px] shrink-0 text-center text-[17px] font-[600] text-amber-400" style={font}>
+                <span className="w-[28px] shrink-0 text-center text-[17px] font-[600] text-accent-primary" style={font}>
                   {index + 1}
                 </span>
                 <SongCardWithMenu
