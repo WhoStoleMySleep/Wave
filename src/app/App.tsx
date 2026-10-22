@@ -14,6 +14,7 @@ import { AppRoutes } from "./routes";
 import DeeplinkHandler from "./DeeplinkHandler";
 import EnvironmentWarning from "./EnvironmentWarning";
 import { useDownloadStore } from "@/features/downloads";
+import { devicesLink } from "@/features/devices";
 import "./globals.css";
 
 function AppIconSync() {
@@ -33,6 +34,11 @@ function ThemeSync() {
 
 function OverlaySync() {
   useOverlaySync();
+  return null;
+}
+
+function DevicesSync() {
+  useEffect(() => devicesLink.start(), []);
   return null;
 }
 
@@ -75,6 +81,7 @@ export default function App() {
         <PresenceSync />
         <OverlaySync />
         <DownloadsSync />
+        <DevicesSync />
         <AppleEmojiProvider>
           <I18nProvider>
             <ToastProvider>

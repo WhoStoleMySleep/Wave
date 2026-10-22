@@ -19,8 +19,9 @@ export const playbackEndpoints = {
     yield* readServerEvents<LyricsStreamEvent>(stream);
   },
 
+  /** A listen that does not get through waits on the device and is sent again, so a failure shows no toast. */
   recordPlaybackEvent(event: PlaybackEvent): Promise<void> {
-    return requestNoContent("/v1/me/playback/events", { method: "POST", body: event });
+    return requestNoContent("/v1/me/playback/events", { method: "POST", body: event, quiet: true });
   },
 
   /** `from` and `to` are instants that narrow the history, `to` excluded. */

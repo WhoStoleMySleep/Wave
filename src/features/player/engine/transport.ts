@@ -44,20 +44,21 @@ export function stopPlayback(): void {
 }
 
 /**
- * Makes `track` the current one from its start and loads it.
+ * Makes `track` the current one and loads it.
  * @param queue - replaces the queue in the same update, so the UI never shows a track outside it
+ * @param startPositionMs - where to start; the track's beginning by default
  */
-export function loadTrack(track: Track, index: number, queue?: Track[]): void {
+export function loadTrack(track: Track, index: number, queue?: Track[], startPositionMs = 0): void {
   usePlayerStore.setState({
     ...(queue && { queue }),
     currentTrack: track,
     currentIndex: index,
-    positionMs: 0,
+    positionMs: startPositionMs,
     durationMs: track.durationMs ?? 0,
     status: "loading",
     error: null,
   });
-  void playerRuntime?.loadAndPlay(track);
+  void playerRuntime?.loadAndPlay(track, startPositionMs);
 }
 
 /** @param autoPlay - start playing from there if paused */

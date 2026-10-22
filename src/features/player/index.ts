@@ -1,5 +1,11 @@
 export { playerRuntime } from "./engine/playerRuntime";
-export { playerEngine, type PlayerStatus, type PlayerStatus as PlaybackStatus } from "./engine/playerEngine";
+export {
+  playerEngine,
+  type PlaybackHandoff,
+  type PlayerStatus,
+  type PlayerStatus as PlaybackStatus,
+  type RepeatMode,
+} from "./engine/playerEngine";
 export { toVolumeGain, toVolumeLevel } from "./engine/volume";
 export {
   usePlayerStore,
@@ -8,6 +14,7 @@ export {
   type MiniPlayerStyle,
   type TrackDoubleClickBehavior,
   type DefaultPlaybackContext,
+  type PlayerState,
 } from "./store/playerStore";
 export { usePlayerState } from "./hooks/usePlayerState";
 export { useAppIconSync } from "./hooks/useAppIconSync";

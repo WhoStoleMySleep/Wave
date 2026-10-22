@@ -81,10 +81,33 @@ describe("PresenceClient", () => {
     expect(initData.token).toBe("test-valid-jwt-token");
     expect(initData.userId).toBe("11111111-1111-1111-1111-111111111111");
     expect(initData.username).toBe("alice");
+    expect(initData.deviceId).toEqual(expect.any(String));
+    expect(initData.deviceName).toEqual(expect.any(String));
 
     // wait for ping interval
     await new Promise((resolve) => setTimeout(resolve, 150));
     expect(socket.sentData.slice(1)).toContain("p");
+
+    client.stop();
+  });
+
+  it("hands the server's messages to listeners and sends after connecting", async () => {
+    const client = new PresenceClient(100);
+    const received: unknown[] = [];
+    const connected = vi.fn();
+    client.onMessage((message) => received.push(message));
+    client.onConnected(connected);
+    expect(client.send({ type: "nowPlaying" })).toBe(false);
+    client.start();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    const socket = mockSockets[0];
+    expect(connected).toHaveBeenCalledTimes(1);
+    socket.onmessage({ data: JSON.stringify({ type: "pause" }) });
+    socket.onmessage({ data: "not json" });
+    expect(received).toEqual([{ type: "pause" }]);
+    expect(client.send({ type: "nowPlaying", state: null })).toBe(true);
+    expect(JSON.parse(socket.sentData.at(-1))).toEqual({ type: "nowPlaying", state: null });
 
     client.stop();
   });
