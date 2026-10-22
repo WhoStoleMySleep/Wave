@@ -59,7 +59,8 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
 
   return createPortal(
     <motion.div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/85 backdrop-blur-xl"
+      data-theme="dark"
+      className="dark fixed inset-0 z-[1000] flex items-center justify-center bg-black/85 backdrop-blur-xl"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       role="dialog"
@@ -73,7 +74,7 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
       )}
 
       <motion.div
-        className="relative h-full w-full overflow-hidden bg-zinc-950 text-white sm:h-[min(92vh,860px)] sm:w-auto sm:aspect-[9/16] sm:rounded-[28px] sm:shadow-2xl"
+        className="relative h-full w-full overflow-hidden bg-bg-primary text-text-primary sm:h-[min(92vh,860px)] sm:w-auto sm:aspect-[9/16] sm:rounded-[28px] sm:shadow-2xl"
         initial={{ scale: 0.94, y: 24 }}
         animate={{ scale: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -112,9 +113,9 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
             />
           </>
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center px-[32px] text-center text-[15px] text-white/80" style={font}>
+          <div className="absolute inset-0 flex items-center justify-center px-[32px] text-center text-[15px] text-text-secondary" style={font}>
             {isLoading ? (
-              <span className="h-[28px] w-[28px] animate-spin rounded-full border-2 border-white/25 border-t-white" aria-label={t("common.loading")} />
+              <span className="h-[28px] w-[28px] animate-spin rounded-full border-2 border-border-alpha-33 border-t-accent-primary" aria-label={t("common.loading")} />
             ) : error ? (
               t("stats.load_error")
             ) : (
@@ -126,12 +127,12 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
         <div className="absolute inset-x-0 top-0 z-20 px-[12px] pt-[max(12px,env(safe-area-inset-top))]">
           <div className="flex gap-[4px]">
             {slides.map((_, position) => (
-              <span key={position} className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-white/30">
-                {position < index && <span className="absolute inset-0 bg-white" />}
+              <span key={position} className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-border-alpha-33">
+                {position < index && <span className="absolute inset-0 bg-text-primary" />}
                 {position === index && (
                   <span
                     key={index}
-                    className="recap-progress absolute inset-0 bg-white"
+                    className="recap-progress absolute inset-0 bg-text-primary"
                     style={{ "--recap-slide-ms": `${SLIDE_MS}ms`, animationPlayState: paused ? "paused" : "running" } as CSSProperties}
                     onAnimationEnd={next}
                   />
@@ -140,7 +141,7 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
             ))}
           </div>
           <div className="mt-[10px] flex items-center justify-between">
-            <span className="text-[14px] font-[700] text-white drop-shadow" style={font}>
+            <span className="text-[14px] font-[700] text-text-primary drop-shadow" style={font}>
               {t("stats.recap.title")} · {label}
             </span>
             <span className="flex items-center gap-[4px]">
@@ -174,7 +175,7 @@ function IconButton({ label, onClick, children }: { label: string; onClick: () =
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="w-[36px] h-[36px] inline-flex items-center justify-center rounded-full border-0 bg-black/25 text-white cursor-pointer backdrop-blur-md hover:bg-black/40"
+      className="w-[36px] h-[36px] inline-flex items-center justify-center rounded-full border-0 bg-border-alpha-14 text-text-primary cursor-pointer backdrop-blur-md hover:bg-border-alpha-33"
     >
       {children}
     </button>
@@ -190,7 +191,7 @@ function SideButton({ label, onClick, disabled, children }: { label: string; onC
       title={label}
       onClick={onClick}
       disabled={disabled}
-      className="max-sm:hidden mx-[20px] w-[44px] h-[44px] inline-flex items-center justify-center rounded-full border-0 bg-white/10 text-white enabled:cursor-pointer enabled:hover:bg-white/20 disabled:opacity-30"
+      className="max-sm:hidden mx-[20px] w-[44px] h-[44px] inline-flex items-center justify-center rounded-full border-0 bg-border-alpha-14 text-text-primary enabled:cursor-pointer enabled:hover:bg-border-alpha-33 disabled:opacity-30"
     >
       {children}
     </button>
