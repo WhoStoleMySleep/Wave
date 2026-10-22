@@ -26,7 +26,7 @@ export function isPageHidden(): boolean {
  * so there the volume is set at once.
  * @returns cancels the fade; `onDone` is not called then
  */
-export function fadeVolume(audio: HTMLAudioElement, target: number, onDone: () => void = noop): () => void {
+export function fadeVolume(audio: HTMLAudioElement, target: number, onDone: () => void = noop, durationMs = FADE_MS): () => void {
   const from = audio.volume;
   if (Math.abs(target - from) <= FADE_FLOOR || isPageHidden()) {
     audio.volume = clampVolume(target);
@@ -35,7 +35,7 @@ export function fadeVolume(audio: HTMLAudioElement, target: number, onDone: () =
   }
   const startedAt = performance.now();
   const tick = () => {
-    const progress = Math.min(1, (performance.now() - startedAt) / FADE_MS);
+    const progress = Math.min(1, (performance.now() - startedAt) / durationMs);
     audio.volume = clampVolume(from + (target - from) * easeInOut(progress));
     if (progress < 1) timer = setTimeout(tick, FADE_TICK_MS);
     else onDone();

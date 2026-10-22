@@ -21,6 +21,8 @@ export interface RequestOptions {
   signal?: AbortSignal;
   anonymous?: boolean;
   timeoutMs?: number;
+  /** The caller copes with a server error itself, so no toast tells the user about it. */
+  quiet?: boolean;
 }
 
 interface Call {
@@ -94,7 +96,7 @@ async function sendAuthorized(call: Call): Promise<Response> {
 }
 
 async function failure(call: Call, response: Response): Promise<ApiError> {
-  if (isServerError(response.status)) noticeServerError(response.status);
+  if (isServerError(response.status) && !call.options.quiet) noticeServerError(response.status);
   const error = await apiErrorFrom(response);
   recordFailure(call, error);
   return error;

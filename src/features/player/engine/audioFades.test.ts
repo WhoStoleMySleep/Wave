@@ -30,6 +30,18 @@ describe("fadeVolume", () => {
     expect(onDone).toHaveBeenCalledTimes(1);
   });
 
+  it("takes as long as it is asked to", () => {
+    const audio = audioAt(0);
+    audio.volume = 0;
+    const onDone = vi.fn();
+    fadeVolume(audio, 1, onDone, 900);
+    vi.advanceTimersByTime(400);
+    expect(onDone).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(600);
+    expect(audio.volume).toBeCloseTo(1);
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
   it("stays put once cancelled", () => {
     const audio = audioAt(0);
     audio.volume = 1;

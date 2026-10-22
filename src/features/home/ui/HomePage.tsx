@@ -15,6 +15,7 @@ import { playerEngine } from "@/features/player";
 import SongCard from "@/features/player/ui/SongCard";
 import SongCardWithMenu from "@/features/player/ui/SongCardWithMenu";
 import { useTranslation } from "@/languages";
+import { RecapPromo } from "@/features/stats";
 import { useIsContentTransparent } from "@/features/settings/store/customizationStore";
 import {
   FireFill,
@@ -104,6 +105,7 @@ export default function HomePage() {
           className={`pointer-events-none absolute -top-8 -left-8 w-[380px] h-[200px] bg-gradient-to-br ${glowClass} blur-3xl opacity-60`}
         />
       )}
+      <RecapPromo />
 
       <div className="relative z-1 grid grid-cols-1 items-start w-full">
         {/* Real Content Layer */}
