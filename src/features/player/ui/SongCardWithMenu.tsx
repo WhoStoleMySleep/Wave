@@ -21,6 +21,7 @@ export interface SongCardWithMenuProps {
   duration?: string;
   durationMs?: number;
   releaseDate?: string;
+  meta?: React.ReactNode;
   explicit?: boolean;
   imageShape?: "square" | "circle";
   trackNumber?: number;
@@ -49,6 +50,7 @@ function SongCardWithMenu({
   duration,
   durationMs,
   releaseDate,
+  meta,
   explicit,
   imageShape,
   trackNumber,
@@ -178,6 +180,7 @@ function SongCardWithMenu({
       onDoubleClick={handleDoubleClick}
       duration={duration}
       releaseDate={releaseDate}
+      meta={meta}
       explicit={explicit}
       badge={id && (searchType === "track" || !searchType) ? <DownloadBadge trackId={id} /> : undefined}
       imageShape={imageShape}
