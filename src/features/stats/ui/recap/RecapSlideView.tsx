@@ -1,8 +1,9 @@
-import type { ReactNode } from "react";
-import { motion } from "framer-motion";
+import type { CSSProperties, ReactNode } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { MoonFill, RepeatFill, SunFill } from "@mingcute/react";
 import { toClientTrack, type ArtistStat, type TrackStat } from "@/shared/api";
 import CoverImage from "@/features/covers/ui/CoverImage";
+import NowPlayingBars from "@/shared/ui/NowPlayingBars";
 import { useTranslation } from "@/languages";
 import { useCountUp } from "../../hooks/useCountUp";
 import { formatDay, formatHour, formatNumber, formatWeek } from "../../lib/format";
@@ -14,6 +15,8 @@ export interface RecapSlideViewProps {
   /** "Autumn 2026" or "2026". */
   periodLabel: string;
   covers: Record<string, string>;
+  /** The entry of a list slide whose music is playing. */
+  sample?: number;
 }
 
 /** Where the accent light sits for each part of the day: low sun, high sun, setting sun, a glow from below. */
@@ -39,21 +42,50 @@ function Reveal({ order, children, className = "", as = "div" }: { order: number
   );
 }
 
-/** Position of a slide's accent glow, in percent of the frame. */
+/** Position of a slide's glow, in percent of the frame. */
 type Glow = [number, number];
 
-/** The app's dark background lit by the accent; slides about a cover or an artist blur it in behind, like the full-screen player. */
-function Frame({ glow, backdrop, children }: { glow: Glow; backdrop?: string; children: ReactNode }) {
+/** "accent" fills the frame with the accent colour for a slide that should stand out. */
+type Tone = "dark" | "accent";
+
+function shadeGlow(x: number, y: number): CSSProperties {
+  return {
+    backgroundImage: `radial-gradient(circle at ${x}% ${y}%, color-mix(in srgb, var(--bg-primary) 45%, transparent), transparent 65%)`,
+  };
+}
+
+/**
+ * The app's dark background lit by a slowly drifting accent glow; slides about
+ * a cover or an artist blur it in behind, like the full-screen player.
+ */
+function Frame({ glow, backdrop, tone = "dark", children }: { glow: Glow; backdrop?: string; tone?: Tone; children: ReactNode }) {
+  // on an accent fill, accent text would vanish, so it takes the text colour there
+  const contentStyle = tone === "accent" ? ({ ...font, "--accent-primary": "var(--text-primary)" } as CSSProperties) : font;
   return (
-    <div className="absolute inset-0 overflow-hidden bg-bg-primary">
-      {backdrop && (
-        <motion.div className="absolute inset-[-20%]" initial={{ scale: 1.1 }} animate={{ scale: 1.25 }} transition={{ duration: 8, ease: "linear" }}>
-          <CoverImage src={backdrop} alt="" fill sizes="480px" className="object-cover blur-3xl opacity-50" draggable={false} />
-          <div className="absolute inset-0 bg-black/60" aria-hidden />
-        </motion.div>
-      )}
-      <div className="absolute inset-0" style={accentGlow(...glow, backdrop ? 25 : 40)} aria-hidden />
-      <div className="relative flex h-full flex-col justify-center px-[28px] pt-[84px] pb-[48px] text-text-primary" style={font}>
+    <div className={`absolute inset-0 overflow-hidden ${tone === "accent" ? "bg-accent-primary" : "bg-bg-primary"}`}>
+      <AnimatePresence initial={false}>
+        {backdrop && (
+          <motion.div
+            key={backdrop}
+            className="absolute inset-[-20%]"
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1.25 }}
+            exit={{ opacity: 0 }}
+            transition={{ opacity: { duration: 0.6 }, scale: { duration: 8, ease: "linear" } }}
+          >
+            <CoverImage src={backdrop} alt="" fill sizes="480px" className="object-cover blur-3xl opacity-50" draggable={false} />
+            <div className="absolute inset-0 bg-black/60" aria-hidden />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <motion.div
+        className="absolute inset-[-15%]"
+        style={tone === "accent" ? shadeGlow(...glow) : accentGlow(...glow, backdrop ? 25 : 40)}
+        animate={{ x: ["0%", "6%", "0%"], y: ["0%", "-5%", "0%"] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        aria-hidden
+      />
+      <div className="relative flex h-full flex-col justify-center px-[28px] pt-[84px] pb-[48px] text-text-primary" style={contentStyle}>
         {children}
       </div>
     </div>
@@ -92,20 +124,27 @@ function ArtistRows({ stats, covers }: { stats: ArtistStat[]; covers: Record<str
   );
 }
 
-function TrackRows({ stats }: { stats: TrackStat[] }) {
+/** The list of top tracks; the one whose music plays stands out, the rest step back. */
+function TrackRows({ stats, playing }: { stats: TrackStat[]; playing?: number }) {
   return (
     <ol className="m-0 p-0 list-none flex flex-col gap-[12px]">
       {stats.map((stat, index) => {
         const track = toClientTrack(stat.track);
+        const dimmed = playing !== undefined && playing !== index;
         return (
-          <Reveal key={track.id} order={index + 1} as="li" className="flex items-center gap-[14px]">
-            <span className="w-[22px] text-[22px] font-[800] text-accent-primary tabular-nums">{index + 1}</span>
-            <span className="relative w-[52px] h-[52px] shrink-0 overflow-hidden rounded-md bg-bg-panel">
-              {track.coverUrl && <CoverImage src={track.coverUrl} alt={track.title} fill sizes="52px" className="object-cover" draggable={false} />}
-            </span>
-            <span className="min-w-0 flex flex-col">
-              <span className="truncate text-[18px] font-[700]">{track.title}</span>
-              <span className="truncate text-[14px] text-text-secondary">{track.artists}</span>
+          <Reveal key={track.id} order={index + 1} as="li">
+            {/* the reveal animates its own opacity, so the dimming sits one level in */}
+            <span className={`flex items-center gap-[14px] transition-opacity duration-500 ${dimmed ? "opacity-45" : ""}`}>
+              <span className="w-[22px] flex justify-center text-[22px] font-[800] text-accent-primary tabular-nums">
+                {playing === index ? <NowPlayingBars playing /> : index + 1}
+              </span>
+              <span className="relative w-[52px] h-[52px] shrink-0 overflow-hidden rounded-md bg-bg-panel">
+                {track.coverUrl && <CoverImage src={track.coverUrl} alt={track.title} fill sizes="52px" className="object-cover" draggable={false} />}
+              </span>
+              <span className="min-w-0 flex flex-col">
+                <span className="truncate text-[18px] font-[700]">{track.title}</span>
+                <span className="truncate text-[14px] text-text-secondary">{track.artists}</span>
+              </span>
             </span>
           </Reveal>
         );
@@ -154,7 +193,7 @@ function PairOfAvatars({ names, urls }: { names: [string, string]; urls: [string
 }
 
 /** One slide of the recap; the frame fills its parent. */
-export default function RecapSlideView({ slide, periodLabel, covers }: RecapSlideViewProps) {
+export default function RecapSlideView({ slide, periodLabel, covers, sample }: RecapSlideViewProps) {
   const { t, locale } = useTranslation();
 
   switch (slide.kind) {
@@ -175,7 +214,7 @@ export default function RecapSlideView({ slide, periodLabel, covers }: RecapSlid
 
     case "minutes":
       return (
-        <Frame glow={[85, 15]}>
+        <Frame glow={[85, 15]} tone="accent">
           <Reveal order={0}><Eyebrow>{t("stats.recap.minutes_title")}</Eyebrow></Reveal>
           <Reveal order={1} className="mt-[8px]">
             <BigNumber value={slide.minutes} />
@@ -204,7 +243,7 @@ export default function RecapSlideView({ slide, periodLabel, covers }: RecapSlid
 
     case "topArtists":
       return (
-        <Frame glow={[100, 0]}>
+        <Frame glow={[100, 0]} backdrop={covers[slide.stats[0].artist.id]}>
           <Reveal order={0} className="mb-[24px]"><Headline>{t("stats.recap.top_artists_title")}</Headline></Reveal>
           <ArtistRows stats={slide.stats} covers={covers} />
           <Reveal order={slide.stats.length + 1} className="mt-[24px]">
@@ -236,16 +275,18 @@ export default function RecapSlideView({ slide, periodLabel, covers }: RecapSlid
       );
     }
 
-    case "topTracks":
+    case "topTracks": {
+      const playing = sample !== undefined ? slide.stats[sample] : undefined;
       return (
-        <Frame glow={[0, 100]}>
+        <Frame glow={[0, 100]} backdrop={playing && toClientTrack(playing.track).coverUrl}>
           <Reveal order={0} className="mb-[24px]"><Headline>{t("stats.recap.top_tracks_title")}</Headline></Reveal>
-          <TrackRows stats={slide.stats} />
+          <TrackRows stats={slide.stats} playing={sample} />
           <Reveal order={slide.stats.length + 1} className="mt-[24px]">
             <Note>{t("stats.recap.top_tracks_note", { count: slide.total })}</Note>
           </Reveal>
         </Frame>
       );
+    }
 
     case "onRepeat": {
       const track = toClientTrack(slide.repeat.track);
@@ -302,7 +343,7 @@ export default function RecapSlideView({ slide, periodLabel, covers }: RecapSlid
 
     case "streak":
       return (
-        <Frame glow={[20, 10]}>
+        <Frame glow={[20, 10]} tone="accent">
           <Reveal order={0}><BigNumber value={slide.days} /></Reveal>
           <Reveal order={1} className="mt-[8px]">
             <Headline>{t("stats.recap.streak_unit", { count: slide.days })}</Headline>

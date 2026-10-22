@@ -955,6 +955,8 @@
       "title": "Recap",
       "pause": "Pause",
       "resume": "Resume",
+      "mute": "Mute",
+      "unmute": "Unmute",
       "previous": "Previous",
       "next": "Next",
       "intro_subtitle": "Let's look back at what you listened to",

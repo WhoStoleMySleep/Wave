@@ -4,10 +4,13 @@ import { openEventStream, request, requestNoContent } from "../client";
 import { readServerEvents } from "../serverEvents";
 
 export const playbackEndpoints = {
-  /** The server proxies the audio, so the session carries a URL the audio element can open without headers. */
-  createPlaybackSession(trackId: string, signal?: AbortSignal): Promise<PlaybackSession> {
+  /**
+   * The server proxies the audio, so the session carries a URL the audio element can open without headers.
+   * @param quiet - the caller gets by without the track, so a failure shows no toast
+   */
+  createPlaybackSession(trackId: string, signal?: AbortSignal, { quiet = false } = {}): Promise<PlaybackSession> {
     const path = apiPath`/v1/tracks/${trackId}/playback`;
-    return request<PlaybackSession>(path, { method: "POST", body: { transport: "proxy" }, signal });
+    return request<PlaybackSession>(path, { method: "POST", body: { transport: "proxy" }, signal, quiet });
   },
 
   /** Each provider answers at its own pace, so candidates arrive as server-sent events. */

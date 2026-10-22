@@ -24,7 +24,8 @@ const SEASONS_BY_MONTH: Season[] = [
 ];
 const MONTH_ID = /^(\d{4})-(0[1-9]|1[0-2])$/;
 
-function localRange(key: PeriodKey): [Date, Date] {
+/** Local midnight the period starts at and the one it ends before. */
+export function periodRange(key: PeriodKey): [Date, Date] {
   switch (key.kind) {
     case "month":
       return [new Date(key.year, key.month - 1, 1), new Date(key.year, key.month, 1)];
@@ -39,7 +40,7 @@ function localRange(key: PeriodKey): [Date, Date] {
 
 /** The period from local midnight to local midnight, with the offset it starts in. */
 export function periodBounds(key: PeriodKey): StatsPeriod {
-  const [start, end] = localRange(key);
+  const [start, end] = periodRange(key);
   return { from: start.toISOString(), to: end.toISOString(), utcOffset: -start.getTimezoneOffset() };
 }
 
@@ -83,10 +84,10 @@ export function recapPeriods(months: string[], now: Date): RecapPeriod[] {
     years.set(periodId(year), year);
     seasons.set(periodId(season), season);
   }
-  const newestFirst = (a: PeriodKey, b: PeriodKey) => localRange(b)[0].getTime() - localRange(a)[0].getTime();
+  const newestFirst = (a: PeriodKey, b: PeriodKey) => periodRange(b)[0].getTime() - periodRange(a)[0].getTime();
   return [...[...years.values()].sort(newestFirst), ...[...seasons.values()].sort(newestFirst)].map((key) => ({
     key,
-    inProgress: now < localRange(key)[1],
+    inProgress: now < periodRange(key)[1],
   }));
 }
 

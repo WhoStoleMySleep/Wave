@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { CloseLine, LeftLine, PauseFill, PlayFill, RightLine } from "@mingcute/react";
+import { CloseLine, LeftLine, PauseFill, PlayFill, RightLine, VolumeFill, VolumeOffFill } from "@mingcute/react";
 import { useTranslation } from "@/languages";
 import { useArtistCovers } from "../../hooks/useArtistCovers";
 import { useListeningStats } from "../../hooks/useListeningStats";
-import { periodLabel, type PeriodKey } from "../../lib/periods";
+import { useRecapSoundtrack } from "../../hooks/useRecapSoundtrack";
+import { markRecapSeen } from "../../hooks/useSeenRecaps";
+import { periodId, periodLabel, type PeriodKey } from "../../lib/periods";
 import { buildRecapSlides, recapArtistIds } from "../../lib/recap";
+import { SAMPLE_MS, recapSoundtrack } from "../../lib/soundtrack";
 import { font } from "../StatsParts";
 import RecapSlideView from "./RecapSlideView";
 
@@ -31,7 +34,12 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
   const covers = useArtistCovers(stats ? recapArtistIds(stats) : []);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(false);
   const pressedAt = useRef(0);
+  const cues = useMemo(() => (stats ? recapSoundtrack(slides, stats) : []), [slides, stats]);
+  const sample = useRecapSoundtrack({ cues, index, paused, muted });
+  const cue = cues[index];
+  const slideMs = cue?.kind === "samples" ? cue.tracks.length * SAMPLE_MS : SLIDE_MS;
   const label = periodLabel(period, locale, (season) => t(`stats.season.${season}`));
 
   const next = useCallback(() => (index + 1 < slides.length ? setIndex(index + 1) : onClose()), [index, slides.length, onClose]);
@@ -54,6 +62,18 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
     document.addEventListener("keydown", onKeyDown, true);
     return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [next, previous, onClose]);
+
+  useEffect(() => {
+    if (slides.length > 0 && index === slides.length - 1) markRecapSeen(periodId(period));
+  }, [index, slides.length, period]);
+
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.hidden) setPaused(true);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
 
   const slide = slides[index];
 
@@ -90,7 +110,7 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.45 }}
               >
-                <RecapSlideView slide={slide} periodLabel={label} covers={covers} />
+                <RecapSlideView slide={slide} periodLabel={label} covers={covers} sample={sample} />
               </motion.div>
             </AnimatePresence>
 
@@ -133,7 +153,7 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
                   <span
                     key={index}
                     className="recap-progress absolute inset-0 bg-text-primary"
-                    style={{ "--recap-slide-ms": `${SLIDE_MS}ms`, animationPlayState: paused ? "paused" : "running" } as CSSProperties}
+                    style={{ "--recap-slide-ms": `${slideMs}ms`, animationPlayState: paused ? "paused" : "running" } as CSSProperties}
                     onAnimationEnd={next}
                   />
                 )}
@@ -145,6 +165,11 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
               {t("stats.recap.title")} · {label}
             </span>
             <span className="flex items-center gap-[4px]">
+              {slide && cues.some(Boolean) && (
+                <IconButton label={muted ? t("stats.recap.unmute") : t("stats.recap.mute")} onClick={() => setMuted(!muted)}>
+                  {muted ? <VolumeOffFill size={18} /> : <VolumeFill size={18} />}
+                </IconButton>
+              )}
               {slide && (
                 <IconButton label={paused ? t("stats.recap.resume") : t("stats.recap.pause")} onClick={() => setPaused(!paused)}>
                   {paused ? <PlayFill size={18} /> : <PauseFill size={18} />}

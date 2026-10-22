@@ -121,6 +121,12 @@ describe("api client", () => {
     expect(recordConnectivityFailure).toHaveBeenCalledWith(expect.objectContaining({ path: "/v1/tracks/x", status: 502 }));
   });
 
+  it("keeps a quiet call's server error to the caller", async () => {
+    fetchMock.mockResolvedValue(json({ message: "upstream" }, 500));
+    await expect(request("/v1/tracks/x/playback", { method: "POST", quiet: true })).rejects.toMatchObject({ status: 500 });
+    expect(noticeServerError).not.toHaveBeenCalled();
+  });
+
   it("rejects an event stream the server refused", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 404, statusText: "Not Found" }));
     await expect(openEventStream("/v1/tracks/x/lyrics")).rejects.toMatchObject({ status: 404 });
