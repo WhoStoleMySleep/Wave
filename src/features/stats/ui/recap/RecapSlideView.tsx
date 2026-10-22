@@ -55,36 +55,32 @@ function shadeGlow(x: number, y: number): CSSProperties {
 }
 
 /**
- * The app's dark background lit by a slowly drifting accent glow; slides about
- * a cover or an artist blur it in behind, like the full-screen player.
+ * The app's dark background lit by an accent glow; slides about a cover or an
+ * artist blur it in behind, like the full-screen player. Every layer stays
+ * still: a moving blur repaints the whole frame each tick, which the WebView
+ * answers with flicker, dropped frames and a stuttering sound.
  */
 function Frame({ glow, backdrop, tone = "dark", children }: { glow: Glow; backdrop?: string; tone?: Tone; children: ReactNode }) {
   // on an accent fill, accent text would vanish, so it takes the text colour there
   const contentStyle = tone === "accent" ? ({ ...font, "--accent-primary": "var(--text-primary)" } as CSSProperties) : font;
   return (
-    <div className={`absolute inset-0 overflow-hidden ${tone === "accent" ? "bg-accent-primary" : "bg-bg-primary"}`}>
+    <div className={`absolute inset-0 overflow-hidden [contain:strict] ${tone === "accent" ? "bg-accent-primary" : "bg-bg-primary"}`}>
       <AnimatePresence initial={false}>
         {backdrop && (
           <motion.div
             key={backdrop}
-            className="absolute inset-[-20%]"
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1.25 }}
+            className="absolute inset-[-15%]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ opacity: { duration: 0.6 }, scale: { duration: 8, ease: "linear" } }}
+            transition={{ duration: 0.6 }}
           >
-            <CoverImage src={backdrop} alt="" fill sizes="480px" className="object-cover blur-3xl opacity-50" draggable={false} />
+            <CoverImage src={backdrop} alt="" fill sizes="160px" className="object-cover blur-2xl opacity-50" draggable={false} />
             <div className="absolute inset-0 bg-black/60" aria-hidden />
           </motion.div>
         )}
       </AnimatePresence>
-      <motion.div
-        className="absolute inset-[-15%]"
-        style={tone === "accent" ? shadeGlow(...glow) : accentGlow(...glow, backdrop ? 25 : 40)}
-        animate={{ x: ["0%", "6%", "0%"], y: ["0%", "-5%", "0%"] }}
-        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-        aria-hidden
-      />
+      <div className="absolute inset-0" style={tone === "accent" ? shadeGlow(...glow) : accentGlow(...glow, backdrop ? 25 : 40)} aria-hidden />
       <div className="relative flex h-full flex-col justify-center px-[28px] pt-[84px] pb-[48px] text-text-primary" style={contentStyle}>
         {children}
       </div>
@@ -200,12 +196,6 @@ export default function RecapSlideView({ slide, periodLabel, covers, sample }: R
     case "intro":
       return (
         <Frame glow={[15, 85]}>
-          <motion.div
-            className="absolute -right-[30%] -top-[10%] h-[70%] aspect-square rounded-full bg-accent-primary/30 blur-3xl"
-            animate={{ scale: [1, 1.15, 1], rotate: [0, 30, 0] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            aria-hidden
-          />
           <Reveal order={0}><Eyebrow>{t("stats.recap.title")}</Eyebrow></Reveal>
           <Reveal order={1}><Headline size="text-[64px] max-sm:text-[54px]">{periodLabel}</Headline></Reveal>
           <Reveal order={2} className="mt-[16px]"><Note>{t("stats.recap.intro_subtitle")}</Note></Reveal>

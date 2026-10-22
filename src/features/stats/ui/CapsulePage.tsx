@@ -7,7 +7,7 @@ import SongCardWithMenu from "@/features/player/ui/SongCardWithMenu";
 import { playerEngine } from "@/features/player";
 import { useTranslation } from "@/languages";
 import { useArtistCovers } from "../hooks/useArtistCovers";
-import { useListeningMonths, useListeningStats } from "../hooks/useListeningStats";
+import { prefetchListeningStats, useListeningMonths, useListeningStats } from "../hooks/useListeningStats";
 import { capsuleArtistIds, monthDays } from "../lib/capsule";
 import { formatNumber, formatWeek } from "../lib/format";
 import { currentMonth, monthId, monthName, parseMonth, periodLabel, recapPeriods, type PeriodKey } from "../lib/periods";
@@ -332,6 +332,8 @@ function RecapSection({ months, onOpen }: { months: string[]; onOpen: (period: P
             key={`${key.kind}-${key.year}-${key.kind === "season" ? key.season : ""}`}
             type="button"
             onClick={() => onOpen(key)}
+            onPointerEnter={() => prefetchListeningStats(key)}
+            onFocus={() => prefetchListeningStats(key)}
             className={`${cardClass} relative aspect-square overflow-hidden border-0 p-[14px] text-left cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98]`}
           >
             <span className="absolute inset-0" style={accentGlow(...RECAP_GLOWS[index % RECAP_GLOWS.length], key.kind === "year" ? 45 : 30)} aria-hidden />

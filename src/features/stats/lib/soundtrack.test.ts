@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { ArtistStat, ListeningStats, TrackStat } from "@/shared/api";
 import type { RecapSlide } from "./recap";
-import { cueTrackIds, recapSoundtrack, type RecapCue } from "./soundtrack";
+import { cueTracks, recapSoundtrack, soundtrackTrackIds, type RecapCue } from "./soundtrack";
 
 function track(id: string, artistId: string): TrackStat {
   return { track: { id, title: id, artists: [{ id: artistId, name: artistId }], durationMs: 180_000 }, plays: 5, minutes: 15 };
@@ -32,7 +32,7 @@ function stats(overrides: Partial<ListeningStats> = {}): ListeningStats {
 
 /** The track ids a cue plays, "-" for silence, samples joined with "+". */
 function heard(cues: (RecapCue | null)[]): string[] {
-  return cues.map((cue) => cueTrackIds(cue).join("+") || "-");
+  return cues.map((cue) => cueTracks(cue).map(({ id }) => id).join("+") || "-");
 }
 
 describe("recapSoundtrack", () => {
@@ -56,6 +56,15 @@ describe("recapSoundtrack", () => {
     const data = stats({ topArtists: [artist("B")] });
     const cues = recapSoundtrack([{ kind: "intro" }, { kind: "topTrack", stat: TRACKS[0] }], data);
     expect(cues[1]).toBe(cues[0]);
+  });
+
+  it("lists every track of the recap once, in playing order", () => {
+    const cues: RecapCue[] = [
+      { kind: "track", track: TRACKS[1].track },
+      { kind: "samples", tracks: [TRACKS[0].track, TRACKS[1].track, TRACKS[2].track] },
+      { kind: "track", track: TRACKS[0].track },
+    ];
+    expect(soundtrackTrackIds([...cues, null])).toEqual(["t2", "t1", "t3"]);
   });
 
   it("stays silent without top tracks", () => {

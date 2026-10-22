@@ -316,21 +316,6 @@ button.apple-glass-action:hover,
   animation: now-playing-bar 0.9s ease-in-out infinite;
 }
 
-/* Fills a recap story's segment; its end moves the story on, so it runs even with reduced motion. */
-@keyframes recap-progress {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
-.recap-progress {
-  transform-origin: left;
-  animation: recap-progress var(--recap-slide-ms) linear forwards;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .now-playing-bars--playing .now-playing-bar {
     animation: none;

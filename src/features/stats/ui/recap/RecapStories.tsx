@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { CloseLine, LeftLine, PauseFill, PlayFill, RightLine, VolumeFill, VolumeOffFill } from "@mingcute/react";
+import { CloseLine, LeftLine, RightLine, VolumeFill, VolumeOffFill } from "@mingcute/react";
 import { useTranslation } from "@/languages";
 import { useArtistCovers } from "../../hooks/useArtistCovers";
 import { useListeningStats } from "../../hooks/useListeningStats";
@@ -9,13 +9,9 @@ import { useRecapSoundtrack } from "../../hooks/useRecapSoundtrack";
 import { markRecapSeen } from "../../hooks/useSeenRecaps";
 import { periodId, periodLabel, type PeriodKey } from "../../lib/periods";
 import { buildRecapSlides, recapArtistIds } from "../../lib/recap";
-import { SAMPLE_MS, recapSoundtrack } from "../../lib/soundtrack";
+import { recapSoundtrack } from "../../lib/soundtrack";
 import { font } from "../StatsParts";
 import RecapSlideView from "./RecapSlideView";
-
-const SLIDE_MS = 7000;
-/** A press shorter than this turns the slide; a longer one only held it paused. */
-const TAP_MS = 250;
 
 export interface RecapStoriesProps {
   period: PeriodKey;
@@ -23,9 +19,9 @@ export interface RecapStoriesProps {
 }
 
 /**
- * The recap as full-screen stories: slides move on by themselves, a tap on the
- * left or right third steps back or forward, holding pauses. Escape (and the
- * Android back button, which the app replays as Escape) closes it.
+ * The recap as full-screen stories. Slides wait for the listener: a tap on the
+ * left third steps back, anywhere else forward, so there is time to read.
+ * Escape (and the Android back button, which the app replays as Escape) closes it.
  */
 export default function RecapStories({ period, onClose }: RecapStoriesProps) {
   const { t, locale } = useTranslation();
@@ -33,13 +29,10 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
   const slides = useMemo(() => (stats ? buildRecapSlides(stats) : []), [stats]);
   const covers = useArtistCovers(stats ? recapArtistIds(stats) : []);
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [hidden, setHidden] = useState(() => document.hidden);
   const [muted, setMuted] = useState(false);
-  const pressedAt = useRef(0);
   const cues = useMemo(() => (stats ? recapSoundtrack(slides, stats) : []), [slides, stats]);
-  const sample = useRecapSoundtrack({ cues, index, paused, muted });
-  const cue = cues[index];
-  const slideMs = cue?.kind === "samples" ? cue.tracks.length * SAMPLE_MS : SLIDE_MS;
+  const sample = useRecapSoundtrack({ cues, index, paused: hidden, muted });
   const label = periodLabel(period, locale, (season) => t(`stats.season.${season}`));
 
   const next = useCallback(() => (index + 1 < slides.length ? setIndex(index + 1) : onClose()), [index, slides.length, onClose]);
@@ -50,7 +43,7 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
       Escape: onClose,
       ArrowRight: next,
       ArrowLeft: previous,
-      " ": () => setPaused((current) => !current),
+      " ": next,
     };
     const onKeyDown = (event: KeyboardEvent) => {
       const action = actions[event.key];
@@ -68,9 +61,7 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
   }, [index, slides.length, period]);
 
   useEffect(() => {
-    const onVisibility = () => {
-      if (document.hidden) setPaused(true);
-    };
+    const onVisibility = () => setHidden(document.hidden);
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
@@ -80,7 +71,7 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
   return createPortal(
     <motion.div
       data-theme="dark"
-      className="dark fixed inset-0 z-[1000] flex items-center justify-center bg-black/85 backdrop-blur-xl"
+      className="dark fixed inset-0 z-[1000] flex items-center justify-center bg-black/90"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       role="dialog"
@@ -105,10 +96,10 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
               <motion.div
                 key={index}
                 className="absolute inset-0"
-                initial={{ opacity: 0, scale: 1.04 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.45 }}
+                transition={{ duration: 0.3 }}
               >
                 <RecapSlideView slide={slide} periodLabel={label} covers={covers} sample={sample} />
               </motion.div>
@@ -116,19 +107,11 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
 
             <div
               className="absolute inset-0 z-10 select-none"
-              onPointerDown={() => {
-                pressedAt.current = Date.now();
-                setPaused(true);
-              }}
-              onPointerUp={(event) => {
-                setPaused(false);
-                if (Date.now() - pressedAt.current > TAP_MS) return;
+              onClick={(event) => {
                 const bounds = event.currentTarget.getBoundingClientRect();
                 if (event.clientX - bounds.left < bounds.width / 3) previous();
                 else next();
               }}
-              onPointerCancel={() => setPaused(false)}
-              onPointerLeave={() => setPaused(false)}
               aria-hidden
             />
           </>
@@ -147,17 +130,10 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
         <div className="absolute inset-x-0 top-0 z-20 px-[12px] pt-[max(12px,env(safe-area-inset-top))]">
           <div className="flex gap-[4px]">
             {slides.map((_, position) => (
-              <span key={position} className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-border-alpha-33">
-                {position < index && <span className="absolute inset-0 bg-text-primary" />}
-                {position === index && (
-                  <span
-                    key={index}
-                    className="recap-progress absolute inset-0 bg-text-primary"
-                    style={{ "--recap-slide-ms": `${slideMs}ms`, animationPlayState: paused ? "paused" : "running" } as CSSProperties}
-                    onAnimationEnd={next}
-                  />
-                )}
-              </span>
+              <span
+                key={position}
+                className={`h-[3px] flex-1 rounded-full transition-colors duration-300 ${position <= index ? "bg-text-primary" : "bg-border-alpha-33"}`}
+              />
             ))}
           </div>
           <div className="mt-[10px] flex items-center justify-between">
@@ -168,11 +144,6 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
               {slide && cues.some(Boolean) && (
                 <IconButton label={muted ? t("stats.recap.unmute") : t("stats.recap.mute")} onClick={() => setMuted(!muted)}>
                   {muted ? <VolumeOffFill size={18} /> : <VolumeFill size={18} />}
-                </IconButton>
-              )}
-              {slide && (
-                <IconButton label={paused ? t("stats.recap.resume") : t("stats.recap.pause")} onClick={() => setPaused(!paused)}>
-                  {paused ? <PlayFill size={18} /> : <PauseFill size={18} />}
                 </IconButton>
               )}
               <IconButton label={t("common.close")} onClick={onClose}>
@@ -200,7 +171,7 @@ function IconButton({ label, onClick, children }: { label: string; onClick: () =
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="w-[36px] h-[36px] inline-flex items-center justify-center rounded-full border-0 bg-border-alpha-14 text-text-primary cursor-pointer backdrop-blur-md hover:bg-border-alpha-33"
+      className="w-[36px] h-[36px] inline-flex items-center justify-center rounded-full border-0 bg-border-alpha-14 text-text-primary cursor-pointer hover:bg-border-alpha-33"
     >
       {children}
     </button>

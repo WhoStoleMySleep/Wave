@@ -4,13 +4,14 @@ import { createRoot, type Root } from "react-dom/client";
 import type { CatalogTrack } from "@/shared/api";
 import { SAMPLE_MS, type RecapCue } from "../lib/soundtrack";
 
-const audio = vi.hoisted(() => ({ play: vi.fn(), prefetch: vi.fn(), setPaused: vi.fn(), setMuted: vi.fn(), stop: vi.fn() }));
+const audio = vi.hoisted(() => ({ play: vi.fn(), prefetch: vi.fn(), prepare: vi.fn(), setPaused: vi.fn(), setMuted: vi.fn(), stop: vi.fn() }));
 const player = vi.hoisted(() => ({ status: "playing", pause: vi.fn(), resume: vi.fn() }));
 
 vi.mock("../lib/recapAudio", () => ({
   RecapAudio: class {
     play = audio.play;
     prefetch = audio.prefetch;
+    prepare = audio.prepare;
     setPaused = audio.setPaused;
     setMuted = audio.setMuted;
     stop = audio.stop;
@@ -63,14 +64,16 @@ describe("useRecapSoundtrack", () => {
     root = createRoot(container);
   });
 
-  it("moves through a list slide's tracks one sample at a time", () => {
+  it("goes round a list slide's tracks one sample at a time", () => {
     act(() => root.render(<Probe index={1} />));
     expect(sample).toBe(0);
     act(() => vi.advanceTimersByTime(SAMPLE_MS));
     expect(sample).toBe(1);
     expect(audio.play).toHaveBeenLastCalledWith(track("b"));
-    act(() => vi.advanceTimersByTime(SAMPLE_MS * 5));
-    expect(sample).toBe(2);
+    act(() => vi.advanceTimersByTime(SAMPLE_MS));
+    act(() => vi.advanceTimersByTime(SAMPLE_MS));
+    expect(sample).toBe(0);
+    expect(audio.play).toHaveBeenLastCalledWith(track("a"));
   });
 
   it("holds the sample while paused and finishes its time afterwards", () => {
@@ -84,8 +87,9 @@ describe("useRecapSoundtrack", () => {
     expect(sample).toBe(1);
   });
 
-  it("asks for the next slide's music ahead", () => {
+  it("asks for every stream at once and buffers the slides around", () => {
     act(() => root.render(<Probe index={0} />));
     expect(audio.prefetch).toHaveBeenCalledWith(["z", "a", "b", "c"]);
+    expect(audio.prepare).toHaveBeenLastCalledWith([track("z"), track("a"), track("b"), track("c")]);
   });
 });

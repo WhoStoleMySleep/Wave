@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { playerEngine, usePlayerStore } from "@/features/player";
 import { RecapAudio } from "../lib/recapAudio";
-import { SAMPLE_MS, cueTrackIds, type RecapCue } from "../lib/soundtrack";
+import { SAMPLE_MS, cueTracks, soundtrackTrackIds, type RecapCue } from "../lib/soundtrack";
 
 export interface RecapSoundtrackOptions {
   cues: (RecapCue | null)[];
@@ -10,7 +10,7 @@ export interface RecapSoundtrackOptions {
   muted: boolean;
 }
 
-/** Which of a list slide's tracks is playing; it moves on every `SAMPLE_MS` while not paused. */
+/** Which of a list slide's tracks is playing; it moves on every `SAMPLE_MS` while not paused and starts over after the last. */
 function useSampleClock(cue: RecapCue | null, paused: boolean): number {
   const [clock, setClock] = useState({ cue, sample: 0 });
   if (clock.cue !== cue) setClock({ cue, sample: 0 });
@@ -23,9 +23,9 @@ function useSampleClock(cue: RecapCue | null, paused: boolean): number {
   }, [cue, sample]);
 
   useEffect(() => {
-    if (paused || sample + 1 >= count) return;
+    if (paused || count < 2) return;
     const startedAt = performance.now();
-    const timer = setTimeout(() => setClock({ cue, sample: sample + 1 }), remainingMs.current);
+    const timer = setTimeout(() => setClock({ cue, sample: (sample + 1) % count }), remainingMs.current);
     return () => {
       clearTimeout(timer);
       remainingMs.current = Math.max(0, remainingMs.current - (performance.now() - startedAt));
@@ -46,6 +46,7 @@ export function useRecapSoundtrack({ cues, index, paused, muted }: RecapSoundtra
   const sample = useSampleClock(cue, paused);
   const track = cue?.kind === "samples" ? cue.tracks[sample] : cue?.track;
   const hasMusic = cues.some(Boolean);
+  const allTrackIds = useMemo(() => soundtrackTrackIds(cues), [cues]);
 
   useEffect(() => {
     if (!hasMusic) return;
@@ -61,8 +62,10 @@ export function useRecapSoundtrack({ cues, index, paused, muted }: RecapSoundtra
     if (track) void audio.play(track);
   }, [audio, track]);
 
+  useEffect(() => audio.prefetch(allTrackIds), [audio, allTrackIds]);
+
   useEffect(() => {
-    audio.prefetch([...cueTrackIds(cue), ...cueTrackIds(cues[index + 1])]);
+    audio.prepare([...cueTracks(cue), ...cueTracks(cues[index + 1]), ...cueTracks(cues[index - 1])]);
   }, [audio, cue, cues, index]);
 
   useEffect(() => audio.setPaused(paused), [audio, paused]);

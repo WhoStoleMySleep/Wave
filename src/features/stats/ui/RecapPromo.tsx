@@ -1,9 +1,9 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SparklesFill } from "@mingcute/react";
 import { useTranslation } from "@/languages";
 import { isMobilePlatform } from "@/shared/hooks/useIsMobile";
-import { useListeningMonths } from "../hooks/useListeningStats";
+import { prefetchListeningStats, useListeningMonths } from "../hooks/useListeningStats";
 import { useSeenRecaps } from "../hooks/useSeenRecaps";
 import { periodLabel, recapPeriods, type PeriodKey } from "../lib/periods";
 import { isRecapSeason, offeredRecap } from "../lib/promo";
@@ -32,6 +32,10 @@ function OfferedRecap({ now }: { now: Date }) {
   const [open, setOpen] = useState<PeriodKey | null>(null);
   const offered = useMemo(() => offeredRecap(recapPeriods(months, now), now, seen), [months, now, seen]);
   const close = useCallback(() => setOpen(null), []);
+
+  useEffect(() => {
+    if (offered) prefetchListeningStats(offered);
+  }, [offered]);
 
   return (
     <>
