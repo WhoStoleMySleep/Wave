@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { playerEngine, usePlayerStore } from "@/features/player";
 import { RecapAudio } from "../lib/recapAudio";
-import { SAMPLE_MS, cueTracks, soundtrackTrackIds, type RecapCue } from "../lib/soundtrack";
+import { SAMPLE_MS, cueTracks, type RecapCue } from "../lib/soundtrack";
 
 export interface RecapSoundtrackOptions {
   cues: (RecapCue | null)[];
@@ -46,7 +46,6 @@ export function useRecapSoundtrack({ cues, index, paused, muted }: RecapSoundtra
   const sample = useSampleClock(cue, paused);
   const track = cue?.kind === "samples" ? cue.tracks[sample] : cue?.track;
   const hasMusic = cues.some(Boolean);
-  const allTrackIds = useMemo(() => soundtrackTrackIds(cues), [cues]);
 
   useEffect(() => {
     if (!hasMusic) return;
@@ -61,8 +60,6 @@ export function useRecapSoundtrack({ cues, index, paused, muted }: RecapSoundtra
   useEffect(() => {
     if (track) void audio.play(track);
   }, [audio, track]);
-
-  useEffect(() => audio.prefetch(allTrackIds), [audio, allTrackIds]);
 
   useEffect(() => {
     audio.prepare([...cueTracks(cue), ...cueTracks(cues[index + 1]), ...cueTracks(cues[index - 1])]);

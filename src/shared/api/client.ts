@@ -21,7 +21,7 @@ export interface RequestOptions {
   signal?: AbortSignal;
   anonymous?: boolean;
   timeoutMs?: number;
-  /** The caller copes with a server error itself, so no toast tells the user about it. */
+  /** The caller copes with a failed request itself, so no toast tells the user about it. */
   quiet?: boolean;
 }
 
@@ -79,7 +79,9 @@ function recordFailure(call: Call, error: unknown): void {
 async function send(call: Call, token: string | null): Promise<Response> {
   const init = { method: call.method, body: call.body, signal: call.options.signal, headers: headersFor(call.body, token) };
   try {
-    return await fetchWithin(getApiBaseUrl() + call.path, init, call.options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+    return await fetchWithin(getApiBaseUrl() + call.path, init, call.options.timeoutMs ?? DEFAULT_TIMEOUT_MS, {
+      quiet: call.options.quiet,
+    });
   } catch (error) {
     recordFailure(call, error);
     throw error;
