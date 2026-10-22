@@ -13,6 +13,7 @@ import { FailureGuard } from "./failureGuard";
 import { LyricsLoader } from "./lyricsLoader";
 import { NextTrackPrefetch } from "./nextTrackPrefetch";
 import { resolveContext } from "./playbackContext";
+import { ListenOutbox } from "./listenOutbox";
 import { PlaybackTelemetry } from "./playbackTelemetry";
 import { QueueMemory } from "./queueMemory";
 import { QueueEditor } from "./queueEditor";
@@ -30,6 +31,18 @@ export interface PlaySource {
   cover?: string | null;
 }
 
+/** What another device plays, to go on with it here. */
+export interface PlaybackHandoff {
+  queue: Track[];
+  index: number;
+  positionMs: number;
+  context: string | null;
+  contextTitle: string | null;
+  contextCover: string | null;
+  shuffle: boolean;
+  repeat: RepeatMode;
+}
+
 type CommandHandlers = { [K in PlayerCommand["type"]]: (command: Extract<PlayerCommand, { type: K }>) => void };
 
 const RESTART_THRESHOLD_MS = 3000;
@@ -45,7 +58,8 @@ function randomIndex(length: number, preferred?: number): number {
 class PlayerEngine {
   private sessionId = 0;
   private readonly memory = new QueueMemory();
-  private readonly telemetry = new PlaybackTelemetry();
+  private readonly listens = new ListenOutbox();
+  private readonly telemetry = new PlaybackTelemetry(this.listens);
   private readonly lyrics = new LyricsLoader();
   private readonly prefetch = new NextTrackPrefetch(this.lyrics);
   private readonly preloadNext = () => this.prefetch.run();
@@ -72,6 +86,8 @@ class PlayerEngine {
     this.bindRuntime();
     if (typeof window === "undefined") return;
     window.addEventListener("beforeunload", () => this.telemetry.flush());
+    this.listens.watch();
+    void this.listens.drain();
     this.watchStore();
     if (usePlayerStore.persist.hasHydrated()) this.restoreHydratedTrack();
     else usePlayerStore.persist.onFinishHydration(() => this.restoreHydratedTrack());
@@ -125,6 +141,27 @@ class PlayerEngine {
     store().setShuffle(true);
     this.applySource(source);
     this.startList(seed, 0, [seed, ...shuffle(rest)]);
+  }
+
+  /**
+   * Goes on with what another device played: its queue, place and modes. The order
+   * before shuffling stays on that device, so shuffle turned off here keeps the order as is.
+   */
+  public takeOver({ queue, index, positionMs, context, contextTitle, contextCover, shuffle, repeat }: PlaybackHandoff): void {
+    const track = queue[index];
+    if (!track) return;
+    this.memory.remember(queue, []);
+    usePlayerStore.setState({
+      playbackContext: context,
+      playbackContextTitle: contextTitle,
+      playbackContextCover: contextCover,
+      shuffle,
+      smartShuffle: false,
+      repeat,
+    });
+    this.wave.restart();
+    this.sessionId += 1;
+    loadTrack(track, index, queue, positionMs);
   }
 
   /** Plays `track` at once and fills the queue with similar tracks when the radio answers. */

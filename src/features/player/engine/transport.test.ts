@@ -40,7 +40,13 @@ describe("transport", () => {
     expect(state.currentIndex).toBe(1);
     expect(state.durationMs).toBe(1234);
     expect(state.status).toBe("loading");
-    expect(runtime.loadAndPlay).toHaveBeenCalledWith(other);
+    expect(runtime.loadAndPlay).toHaveBeenCalledWith(other, 0);
+  });
+
+  it("loads a track from a given place", () => {
+    loadTrack(track, 0, undefined, 42_000);
+    expect(usePlayerStore.getState().positionMs).toBe(42_000);
+    expect(runtime.loadAndPlay).toHaveBeenCalledWith(track, 42_000);
   });
 
   it("hands a seek to the loading track as its start", () => {

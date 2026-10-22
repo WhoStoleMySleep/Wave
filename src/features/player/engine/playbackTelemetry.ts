@@ -1,7 +1,7 @@
-import { api, type PlaybackContext, type PlaybackEvent } from "@/shared/api";
-import { log } from "@/shared/utils/logger";
+import type { PlaybackContext, PlaybackEvent } from "@/shared/api";
 import type { Track } from "@/shared/types";
-import { createId, errorMessage } from "./engineUtils";
+import { createId } from "./engineUtils";
+import type { ListenOutbox } from "./listenOutbox";
 import { parsePlaybackContext } from "./playbackContext";
 
 const LISTENING_SESSION_TIMEOUT_MS = 30 * 60 * 1000;
@@ -26,6 +26,8 @@ export class PlaybackTelemetry {
   private lastTickAt: number | null = null;
   private listeningSessionId = "";
   private lastActivityAt = 0;
+
+  constructor(private readonly outbox: Pick<ListenOutbox, "add">) {}
 
   /** Reports the previous track and starts measuring `track`. */
   startTrack(track: Track, context: string | null): void {
@@ -83,7 +85,7 @@ export class PlaybackTelemetry {
     const listen = this.listen;
     this.listen = null;
     if (listen.playedMs < MIN_REPORTED_PLAY_MS && !listen.completed) return;
-    this.send(this.toEvent(listen));
+    this.outbox.add(this.toEvent(listen));
   }
 
   private addPlayedSinceTick(maxGapMs: number): void {
@@ -114,13 +116,8 @@ export class PlaybackTelemetry {
       loopCount: listen.loopCount,
       hasSeekBackward: listen.hasSeekBackward,
       context: listen.context,
+      listenedAt: new Date().toISOString(),
     };
-  }
-
-  private send(event: PlaybackEvent): void {
-    api.recordPlaybackEvent(event).catch((error) => {
-      log("yellow", "telemetry", `playback event report failed: ${errorMessage(error)}`);
-    });
   }
 }
 

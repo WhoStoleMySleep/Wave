@@ -897,6 +897,10 @@
     "settings": "Налаштування",
     "sign_out": "Вийти"
   },
+  "devices": {
+    "playing_on": "грає на {device}",
+    "take_over": "Слухати тут"
+  },
   "connectivity": {
     "wall_title": "Немає з'єднання",
     "wall_subtitle": "Wave не може зв'язатися із серверами. Ваша музика й бібліотека в безпеці.",

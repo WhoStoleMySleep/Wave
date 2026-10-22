@@ -1,19 +1,16 @@
 import { getAuthSession, getValidAccessToken } from "../api/auth-session";
 import { getApiBaseUrl } from "../api/baseUrl";
 import { APP_VERSION } from "../config/version";
+import { getDeviceId, getDeviceName, getPlatform } from "./device";
 
 const DEFAULT_PING_INTERVAL_MS = 25_000;
 const INITIAL_RECONNECT_DELAY_MS = 2_000;
 const MAX_RECONNECT_DELAY_MS = 30_000;
 
-function getPlatform(): string {
-  if (typeof navigator === "undefined") return "desktop";
-  const ua = navigator.userAgent.toLowerCase();
-  if (ua.includes("win")) return "windows";
-  if (ua.includes("mac")) return "macos";
-  if (ua.includes("linux")) return "linux";
-  return "desktop";
-}
+/** A message the server sends over the presence socket; `type` tells them apart. */
+export type PresenceMessage = { type: string } & Record<string, unknown>;
+
+type MessageListener = (message: PresenceMessage) => void;
 
 function getWsEndpointUrl(): string {
   const apiBase = getApiBaseUrl();
@@ -31,6 +28,9 @@ export class PresenceClient {
   private isDestroyed = false;
 
   private isConnecting = false;
+  private readonly messageListeners = new Set<MessageListener>();
+  private readonly connectListeners = new Set<() => void>();
+  private readonly disconnectListeners = new Set<() => void>();
 
   constructor(private readonly pingIntervalMs = DEFAULT_PING_INTERVAL_MS) {}
 
@@ -61,6 +61,47 @@ export class PresenceClient {
       window.removeEventListener("online", this.handleOnline);
       document.removeEventListener("visibilitychange", this.handleVisibilityChange);
     }
+  }
+
+  /** @returns stops listening */
+  onMessage(listener: MessageListener): () => void {
+    this.messageListeners.add(listener);
+    return () => this.messageListeners.delete(listener);
+  }
+
+  /** Runs after each (re)connect, when the server has forgotten what this device told it. @returns stops listening */
+  onConnected(listener: () => void): () => void {
+    this.connectListeners.add(listener);
+    return () => this.connectListeners.delete(listener);
+  }
+
+  /** Runs when the socket goes, as what the server told this device may be out of date. @returns stops listening */
+  onDisconnected(listener: () => void): () => void {
+    this.disconnectListeners.add(listener);
+    return () => this.disconnectListeners.delete(listener);
+  }
+
+  /** @returns whether the message went out; without a socket it is dropped, and `onConnected` is the time to send again */
+  send(message: object): boolean {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false;
+    try {
+      this.ws.send(JSON.stringify(message));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private receive(data: unknown): void {
+    if (typeof data !== "string") return;
+    let message: unknown;
+    try {
+      message = JSON.parse(data);
+    } catch {
+      return;
+    }
+    if (typeof (message as PresenceMessage | null)?.type !== "string") return;
+    this.messageListeners.forEach((listener) => listener(message as PresenceMessage));
   }
 
   private handleAuthChanged = (): void => {
@@ -101,6 +142,7 @@ export class PresenceClient {
 
   private disconnectSocket(): void {
     if (this.ws) {
+      this.disconnectListeners.forEach((listener) => listener());
       const socket = this.ws;
       this.ws = null;
       socket.onopen = null;
@@ -152,13 +194,16 @@ export class PresenceClient {
         this.reconnectDelay = INITIAL_RECONNECT_DELAY_MS;
 
         const session = getAuthSession();
+        const platform = getPlatform();
         const initPayload = {
           token: accessToken,
           userId: session?.user?.id,
           username: session?.user?.username,
           email: session?.user?.email,
           clientVersion: APP_VERSION,
-          platform: getPlatform(),
+          platform,
+          deviceId: getDeviceId(),
+          deviceName: getDeviceName(platform),
         };
 
         try {
@@ -167,6 +212,7 @@ export class PresenceClient {
           this.scheduleReconnect();
           return;
         }
+        this.connectListeners.forEach((listener) => listener());
 
         // start periodic 1-byte ping heartbeat
         this.pingTimer = setInterval(() => {
@@ -180,11 +226,16 @@ export class PresenceClient {
         }, this.pingIntervalMs);
       };
 
+      ws.onmessage = (event: MessageEvent) => {
+        if (this.ws === ws) this.receive(event.data);
+      };
+
       ws.onclose = () => {
         this.isConnecting = false;
         if (this.ws !== ws) return;
         this.clearTimers();
         this.ws = null;
+        this.disconnectListeners.forEach((listener) => listener());
         this.scheduleReconnect();
       };
 

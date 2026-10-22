@@ -28,4 +28,6 @@ export interface PlaybackEvent {
   loopCount?: number;
   hasSeekBackward?: boolean;
   context?: PlaybackContext;
+  /** When the listen ended; a listen sent late keeps its time in the history. */
+  listenedAt?: string;
 }

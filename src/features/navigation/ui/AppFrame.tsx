@@ -51,6 +51,7 @@ import {
 import { SettingsModal, useCustomizationStore, getBlockStyle } from "@/features/settings";
 import { UpdateModal, UpdateToastBridge } from "@/features/updater";
 import { OfflineBanner } from "@/features/connectivity";
+import { HandoffBanner } from "@/features/devices";
 import { useIsMobile } from "@/shared/hooks";
 
 
@@ -766,6 +767,7 @@ export default function AppFrame({ children }: AppFrameProps) {
           </AnimatePresence>
 
           {!isFullscreenPlayer && <OfflineBanner />}
+          {!isFullscreenPlayer && <HandoffBanner />}
 
           {!isFullscreenPlayer && (
             <AnimatePresence initial={false}>

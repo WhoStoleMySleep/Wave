@@ -858,6 +858,10 @@
     "settings": "Settings",
     "sign_out": "Sign out"
   },
+  "devices": {
+    "playing_on": "playing on {device}",
+    "take_over": "Listen here"
+  },
   "connectivity": {
     "wall_title": "Connection failed",
     "wall_subtitle": "Wave can't reach its servers. Your music and library are safe.",
