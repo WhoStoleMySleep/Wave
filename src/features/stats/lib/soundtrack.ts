@@ -79,8 +79,3 @@ export function cueTracks(cue: RecapCue | null | undefined): CatalogTrack[] {
   if (!cue) return [];
   return cue.kind === "track" ? [cue.track] : cue.tracks;
 }
-
-/** Every track of the recap once, in the order they first play. */
-export function soundtrackTrackIds(cues: (RecapCue | null)[]): string[] {
-  return [...new Set(cues.flatMap((cue) => cueTracks(cue).map(({ id }) => id)))];
-}

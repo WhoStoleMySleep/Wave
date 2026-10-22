@@ -4,13 +4,12 @@ import { createRoot, type Root } from "react-dom/client";
 import type { CatalogTrack } from "@/shared/api";
 import { SAMPLE_MS, type RecapCue } from "../lib/soundtrack";
 
-const audio = vi.hoisted(() => ({ play: vi.fn(), prefetch: vi.fn(), prepare: vi.fn(), setPaused: vi.fn(), setMuted: vi.fn(), stop: vi.fn() }));
+const audio = vi.hoisted(() => ({ play: vi.fn(), prepare: vi.fn(), setPaused: vi.fn(), setMuted: vi.fn(), stop: vi.fn() }));
 const player = vi.hoisted(() => ({ status: "playing", pause: vi.fn(), resume: vi.fn() }));
 
 vi.mock("../lib/recapAudio", () => ({
   RecapAudio: class {
     play = audio.play;
-    prefetch = audio.prefetch;
     prepare = audio.prepare;
     setPaused = audio.setPaused;
     setMuted = audio.setMuted;
@@ -87,9 +86,8 @@ describe("useRecapSoundtrack", () => {
     expect(sample).toBe(1);
   });
 
-  it("asks for every stream at once and buffers the slides around", () => {
+  it("buffers the tracks of the slide and the ones around it", () => {
     act(() => root.render(<Probe index={0} />));
-    expect(audio.prefetch).toHaveBeenCalledWith(["z", "a", "b", "c"]);
     expect(audio.prepare).toHaveBeenLastCalledWith([track("z"), track("a"), track("b"), track("c")]);
   });
 });

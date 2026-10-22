@@ -39,6 +39,14 @@ describe("fetchWithin", () => {
     expect(noticeConnectionFailure).toHaveBeenCalledWith("network");
   });
 
+  it("keeps quiet about a timeout the caller copes with", async () => {
+    hangingFetch();
+    const pending = fetchWithin("/x", {}, 1000, { quiet: true });
+    vi.advanceTimersByTime(1000);
+    await expect(pending).rejects.toMatchObject({ code: "TIMEOUT_ERROR" });
+    expect(noticeConnectionFailure).not.toHaveBeenCalled();
+  });
+
   it("passes the caller's abort through without a notice", async () => {
     hangingFetch();
     const caller = new AbortController();

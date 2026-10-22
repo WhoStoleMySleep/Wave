@@ -14,9 +14,9 @@ function followSignal(controller: AbortController, signal: AbortSignal | null | 
   return () => signal.removeEventListener("abort", forward);
 }
 
-function connectionError(error: unknown, callerSignal: AbortSignal | null | undefined, timedOut: boolean): unknown {
+function connectionError(error: unknown, callerSignal: AbortSignal | null | undefined, timedOut: boolean, quiet: boolean): unknown {
   if (callerSignal?.aborted) return error;
-  noticeConnectionFailure(timedOut ? "timeout" : "network");
+  if (!quiet) noticeConnectionFailure(timedOut ? "timeout" : "network");
   return timedOut
     ? new ApiError(0, "Request timed out", "TIMEOUT_ERROR")
     : new ApiError(0, "Unable to reach the server", "NETWORK_ERROR");
@@ -24,9 +24,10 @@ function connectionError(error: unknown, callerSignal: AbortSignal | null | unde
 
 /**
  * fetch that gives up after `timeoutMs`, so a stalled connection cannot hang the UI.
+ * @param quiet - the caller copes with the failure itself, so no toast tells the user about it
  * @throws ApiError with status 0 when the server is unreachable or too slow
  */
-export async function fetchWithin(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+export async function fetchWithin(url: string, init: RequestInit, timeoutMs: number, { quiet = false } = {}): Promise<Response> {
   const controller = new AbortController();
   let timedOut = false;
   const timer = setTimeout(() => {
@@ -37,7 +38,7 @@ export async function fetchWithin(url: string, init: RequestInit, timeoutMs: num
   try {
     return await fetch(url, { ...init, signal: controller.signal });
   } catch (error) {
-    throw connectionError(error, init.signal, timedOut);
+    throw connectionError(error, init.signal, timedOut, quiet);
   } finally {
     clearTimeout(timer);
     unfollow();

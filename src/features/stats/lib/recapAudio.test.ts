@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CatalogTrack, PlaybackSession } from "@/shared/api";
+import type { CachedAudioRecord } from "@/shared/storage";
 
 const createPlaybackSession = vi.fn<(trackId: string) => Promise<PlaybackSession>>();
+const getAudio = vi.fn<(trackId: string) => Promise<CachedAudioRecord | null>>();
+
+vi.mock("@/shared/storage", () => ({ waveDb: { getAudio: (trackId: string) => getAudio(trackId) } }));
 
 vi.mock("@/shared/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/shared/api")>();
@@ -38,6 +42,8 @@ describe("RecapAudio", () => {
   beforeEach(() => {
     played = [];
     createPlaybackSession.mockImplementation(async (trackId) => session(trackId));
+    getAudio.mockResolvedValue(null);
+    vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: () => "blob:saved", revokeObjectURL: () => {} }));
     vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(function (this: HTMLMediaElement) {
       played.push(this.src);
       return Promise.resolve();
@@ -49,6 +55,7 @@ describe("RecapAudio", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     createPlaybackSession.mockReset();
+    getAudio.mockReset();
   });
 
   it("plays a track from its stream", async () => {
@@ -110,11 +117,26 @@ describe("RecapAudio", () => {
     expect(element.volume).toBe(0);
   });
 
-  it("reuses a prefetched stream", async () => {
+  it("plays a track saved on the device without asking the server", async () => {
+    getAudio.mockResolvedValue({ trackId: "a", blob: new Blob(), mimeType: "audio/webm", byteSize: 0, savedAt: 0 });
     const audio = new RecapAudio();
-    audio.prefetch(["a"]);
     await audio.play(track("a"));
-    expect(createPlaybackSession).toHaveBeenCalledTimes(1);
+    expect(played).toEqual(["blob:saved"]);
+    expect(createPlaybackSession).not.toHaveBeenCalled();
+  });
+
+  it("asks the server for two streams at a time", async () => {
+    const pending: (() => void)[] = [];
+    createPlaybackSession.mockImplementation(
+      (trackId) => new Promise((resolve) => pending.push(() => resolve(session(trackId)))),
+    );
+    const audio = new RecapAudio();
+    audio.prepare([track("a"), track("b"), track("c")]);
+    await vi.waitFor(() => expect(createPlaybackSession).toHaveBeenCalledTimes(2));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(createPlaybackSession).toHaveBeenCalledTimes(2);
+    pending[0]();
+    await vi.waitFor(() => expect(createPlaybackSession).toHaveBeenCalledTimes(3));
   });
 
   it("plays a buffered track without asking for its stream again", async () => {
