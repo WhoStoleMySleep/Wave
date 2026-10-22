@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LeftLine, RightLine, RightSmallLine, TimeFill, SparklesFill } from "@mingcute/react";
 import { toClientTrack, type ListeningStats, type StatsWeek } from "@/shared/api";
@@ -25,6 +25,7 @@ export default function CapsulePage() {
   const id = monthId(month);
   const { data: stats, isLoading, error } = useListeningStats(month);
   const [recap, setRecap] = useState<PeriodKey | null>(null);
+  const closeRecap = useCallback(() => setRecap(null), []);
 
   // `months` is newest first, so plain string comparison finds the neighbours
   const older = months.find((other) => other < id);
@@ -65,7 +66,7 @@ export default function CapsulePage() {
         <HistoryLink />
       </div>
 
-      {recap && <RecapStories period={recap} onClose={() => setRecap(null)} />}
+      {recap && <RecapStories period={recap} onClose={closeRecap} />}
     </StatsPage>
   );
 }

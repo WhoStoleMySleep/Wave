@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { CloseLine, LeftLine, PauseFill, PlayFill, RightLine } from "@mingcute/react";
@@ -34,19 +34,17 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
   const pressedAt = useRef(0);
   const label = periodLabel(period, locale, (season) => t(`stats.season.${season}`));
 
-  const next = () => (index + 1 < slides.length ? setIndex(index + 1) : onClose());
-  const previous = () => setIndex(Math.max(0, index - 1));
-  const keys = useRef({ next, previous, onClose });
-  keys.current = { next, previous, onClose };
+  const next = useCallback(() => (index + 1 < slides.length ? setIndex(index + 1) : onClose()), [index, slides.length, onClose]);
+  const previous = useCallback(() => setIndex(Math.max(0, index - 1)), [index]);
 
   useEffect(() => {
+    const actions: Record<string, () => void> = {
+      Escape: onClose,
+      ArrowRight: next,
+      ArrowLeft: previous,
+      " ": () => setPaused((current) => !current),
+    };
     const onKeyDown = (event: KeyboardEvent) => {
-      const actions: Record<string, () => void> = {
-        Escape: () => keys.current.onClose(),
-        ArrowRight: () => keys.current.next(),
-        ArrowLeft: () => keys.current.previous(),
-        " ": () => setPaused((current) => !current),
-      };
       const action = actions[event.key];
       if (!action) return;
       event.preventDefault();
@@ -55,7 +53,7 @@ export default function RecapStories({ period, onClose }: RecapStoriesProps) {
     };
     document.addEventListener("keydown", onKeyDown, true);
     return () => document.removeEventListener("keydown", onKeyDown, true);
-  }, []);
+  }, [next, previous, onClose]);
 
   const slide = slides[index];
 
