@@ -1,5 +1,5 @@
 export { api, mediaUrl, toMaxQualityAvatarUrl, ApiError, resolveApiErrorMessage } from "./api";
-export type { RadioOptions } from "./api";
+export type { RadioOptions, StatsPeriod } from "./api";
 export type * from "../contracts";
 export { API_BASE_URL, getApiBaseUrl } from "./baseUrl";
 export {

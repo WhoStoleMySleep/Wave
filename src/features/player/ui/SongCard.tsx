@@ -23,6 +23,8 @@ export interface SongCardProps {
   onDoubleClick?: () => void;
   duration?: string;
   releaseDate?: string;
+  /** Rendered on the right before the date and duration, e.g. a play count. */
+  meta?: React.ReactNode;
   explicit?: boolean;
   /** Rendered before the artists line, e.g. a download marker. */
   badge?: React.ReactNode;
@@ -61,6 +63,7 @@ function SongCard({
   onDoubleClick,
   duration,
   releaseDate,
+  meta,
   explicit = false,
   badge,
   imageShape = "square",
@@ -284,6 +287,7 @@ function SongCard({
       </div>
 
       <div className="flex items-center shrink-0 ml-[16px] gap-[16px]">
+        {meta}
         {releaseDate && (
           <span
             className="text-[14px] text-text-tertiary"

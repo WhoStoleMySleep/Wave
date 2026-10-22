@@ -8,3 +8,4 @@ export * from "./lyrics";
 export * from "./mixes";
 export * from "./playback";
 export * from "./playlists";
+export * from "./stats";

@@ -20,8 +20,9 @@ export const playbackEndpoints = {
     return requestNoContent("/v1/me/playback/events", { method: "POST", body: event });
   },
 
-  getHistory(cursor?: string, limit = 30): Promise<ListeningHistoryPage> {
-    return request<ListeningHistoryPage>(withQuery("/v1/me/history", { limit, cursor }));
+  /** `from` and `to` are instants that narrow the history, `to` excluded. */
+  getHistory(cursor?: string, limit = 30, range: { from?: string; to?: string } = {}): Promise<ListeningHistoryPage> {
+    return request<ListeningHistoryPage>(withQuery("/v1/me/history", { limit, cursor, from: range.from, to: range.to }));
   },
 
   getDailyMixes(): Promise<DailyMixes> {

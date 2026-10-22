@@ -11,7 +11,10 @@ import {
   QuestionCircle,
   Database,
   Widget5,
+  Stars,
+  History,
 } from "@solar-icons/react";
+import { useNavigate } from "react-router-dom";
 import Dialog from "@/shared/ui/Dialog";
 import { useIsMobile } from "@/shared/hooks";
 import { UserAvatar } from "@/shared/ui";
@@ -211,6 +214,12 @@ export default function SettingsModal() {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
+  const navigate = useNavigate();
+  const openPage = (path: string) => {
+    handleClose();
+    navigate(path);
+  };
+
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const displayName =
@@ -327,6 +336,32 @@ export default function SettingsModal() {
               })}
             </div>
           )))}
+
+          {!matchingTabIds && (
+            <div className="flex flex-col gap-[2px]">
+              <p
+                className="text-text-tertiary text-[11px] font-[500] m-0 px-[10px] pb-[4px] pt-[2px]"
+                style={font}
+              >
+                {t("stats.entry_group")}
+              </p>
+              {[
+                { path: "/capsule", label: t("stats.capsule_title"), Icon: Stars },
+                { path: "/history", label: t("stats.history_title"), Icon: History },
+              ].map(({ path, label, Icon }) => (
+                <button
+                  key={path}
+                  type="button"
+                  onClick={() => openPage(path)}
+                  className={`w-full flex items-center gap-[10px] px-[10px] ${isMobile ? "py-[13px]" : "py-[8px]"} rounded-[8px] border-0 bg-transparent text-text-secondary hover:bg-border-alpha-14 hover:text-text-primary cursor-pointer text-left transition-colors`}
+                  style={{ ...font, fontSize: "13.5px" }}
+                >
+                  <Icon size={18} weight="Bold" className="text-text-tertiary shrink-0" />
+                  <span className="truncate leading-none">{label}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="flex flex-col gap-[2px] pt-[2px] mt-[2px] border-t border-solid border-border-primary">
             <p
