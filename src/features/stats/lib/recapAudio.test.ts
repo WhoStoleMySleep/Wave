@@ -117,6 +117,25 @@ describe("RecapAudio", () => {
     expect(createPlaybackSession).toHaveBeenCalledTimes(1);
   });
 
+  it("plays a buffered track without asking for its stream again", async () => {
+    const audio = new RecapAudio();
+    audio.prepare([track("a"), track("b")]);
+    await vi.waitFor(() => expect(createPlaybackSession).toHaveBeenCalledTimes(2));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await audio.play(track("b"));
+    expect(played).toEqual(["https://example.com/b.webm"]);
+    expect(createPlaybackSession).toHaveBeenCalledTimes(2);
+  });
+
+  it("lets go of buffers no longer near", async () => {
+    const release = vi.spyOn(HTMLMediaElement.prototype, "removeAttribute");
+    const audio = new RecapAudio();
+    audio.prepare([track("a")]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    audio.prepare([track("b")]);
+    expect(release).toHaveBeenCalledWith("src");
+  });
+
   it("waits with the music while paused", async () => {
     const audio = new RecapAudio();
     audio.setPaused(true);

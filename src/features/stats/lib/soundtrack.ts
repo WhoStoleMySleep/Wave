@@ -4,8 +4,8 @@ import type { RecapSlide } from "./recap";
 /** What plays under a slide: one track, or a few seconds of each listed track in turn. */
 export type RecapCue = { kind: "track"; track: CatalogTrack } | { kind: "samples"; tracks: CatalogTrack[] };
 
-/** How long each track of a list slide plays. */
-export const SAMPLE_MS = 2800;
+/** How long each track of a list slide plays before the next; the list goes round while the slide is open. */
+export const SAMPLE_MS = 8000;
 /** Where a track starts: by then most songs are past the intro. */
 export const START_FRACTION = 0.35;
 
@@ -74,8 +74,13 @@ export function recapSoundtrack(slides: RecapSlide[], stats: ListeningStats): (R
   });
 }
 
-/** The track ids a cue needs, to fetch them ahead of the slide. */
-export function cueTrackIds(cue: RecapCue | null | undefined): string[] {
+/** The tracks a cue plays, to get them ready ahead of the slide. */
+export function cueTracks(cue: RecapCue | null | undefined): CatalogTrack[] {
   if (!cue) return [];
-  return cue.kind === "track" ? [cue.track.id] : cue.tracks.map(({ id }) => id);
+  return cue.kind === "track" ? [cue.track] : cue.tracks;
+}
+
+/** Every track of the recap once, in the order they first play. */
+export function soundtrackTrackIds(cues: (RecapCue | null)[]): string[] {
+  return [...new Set(cues.flatMap((cue) => cueTracks(cue).map(({ id }) => id)))];
 }

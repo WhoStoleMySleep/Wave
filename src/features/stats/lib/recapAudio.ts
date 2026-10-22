@@ -27,6 +27,9 @@ interface Voice {
  */
 export class RecapAudio {
   private readonly sessions = new Map<string, Promise<PlaybackSession>>();
+  /** Tracks buffering at their start point, ready to play without a wait. */
+  private readonly prepared = new Map<string, Voice>();
+  private wanted = new Set<string>();
   private voice: Voice | null = null;
   /** Bumped by every play, so a stream that arrives late does not start over a newer one. */
   private epoch = 0;
@@ -38,16 +41,27 @@ export class RecapAudio {
     trackIds.forEach((id) => void this.session(id).catch(noop));
   }
 
+  /** Buffers these tracks ahead; buffers of tracks no longer near are let go. */
+  prepare(tracks: CatalogTrack[]): void {
+    this.wanted = new Set(tracks.map(({ id }) => id));
+    for (const [id, voice] of this.prepared) {
+      if (this.wanted.has(id)) continue;
+      releaseSource(voice.audio);
+      this.prepared.delete(id);
+    }
+    tracks.forEach((track) => void this.prepareOne(track));
+  }
+
   async play(track: CatalogTrack): Promise<void> {
     if (this.voice?.trackId === track.id) return;
     const epoch = ++this.epoch;
-    const session = await this.session(track.id).catch((error: unknown) => {
-      log("yellow", "recap", `no stream for ${track.title}: ${String(error)}`);
-      return null;
-    });
-    if (!session || epoch !== this.epoch) return;
+    const voice = await this.readyVoice(track);
+    if (!voice) return;
+    if (epoch !== this.epoch) {
+      releaseSource(voice.audio);
+      return;
+    }
     const previous = this.voice;
-    const voice = this.createVoice(track, session);
     this.voice = voice;
     if (this.paused) {
       this.retire(previous);
@@ -74,11 +88,33 @@ export class RecapAudio {
     if (this.voice) this.fadeTo(this.voice, this.target(this.voice));
   }
 
-  /** Fades the music out and lets go of it; a play still waiting for its stream is dropped. */
+  /** Fades the music out and lets go of it and of every buffer; a play still waiting for its stream is dropped. */
   stop(): void {
     this.epoch++;
     this.retire(this.voice);
     this.voice = null;
+    this.prepare([]);
+  }
+
+  private async prepareOne(track: CatalogTrack): Promise<void> {
+    if (this.voice?.trackId === track.id || this.prepared.has(track.id)) return;
+    const session = await this.session(track.id).catch(() => null);
+    if (!session || !this.wanted.has(track.id) || this.prepared.has(track.id) || this.voice?.trackId === track.id) return;
+    this.prepared.set(track.id, this.createVoice(track, session));
+  }
+
+  private async readyVoice(track: CatalogTrack): Promise<Voice | null> {
+    const prepared = this.prepared.get(track.id);
+    if (prepared) {
+      this.prepared.delete(track.id);
+      return prepared;
+    }
+    try {
+      return this.createVoice(track, await this.session(track.id));
+    } catch (error) {
+      log("yellow", "recap", `no stream for ${track.title}: ${String(error)}`);
+      return null;
+    }
   }
 
   private createVoice(track: CatalogTrack, session: PlaybackSession): Voice {
@@ -88,7 +124,7 @@ export class RecapAudio {
     audio.volume = 0;
     audio.src = mediaUrl(session.streamUrl);
     const voice: Voice = { trackId: track.id, audio, gain: this.trackGain(session), stopFade: noop, retired: false };
-    seekWhenLoaded(audio, track.durationMs * START_FRACTION, () => this.voice === voice);
+    seekWhenLoaded(audio, track.durationMs * START_FRACTION, () => !voice.retired);
     return voice;
   }
 
