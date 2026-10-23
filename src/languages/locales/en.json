@@ -426,7 +426,13 @@
     "playlists": "Playlists",
     "no_results": "No results found",
     "type_to_search": "Type to search",
-    "source": "Search source"
+    "source": "Search source",
+    "sources": {
+      "youtube": "YouTube",
+      "deezer": "Deezer",
+      "yandex": "Yandex",
+      "spotify": "Spotify"
+    }
   },
   "settings": {
     "title": "Settings",

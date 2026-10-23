@@ -1,11 +1,5 @@
-import type { SearchSource } from "@/shared/api";
 import { useTranslation } from "@/languages";
 import { SEARCH_SOURCES, useSearchSourceStore } from "../store/searchSourceStore";
-
-const SOURCE_NAMES: Record<SearchSource, string> = {
-  youtube: "YouTube",
-  deezer: "Deezer",
-};
 
 /** Picks the catalog search looks in; whatever is found still plays from YouTube. */
 export function SearchSourceSwitch() {
@@ -34,7 +28,7 @@ export function SearchSourceSwitch() {
             }`}
             style={{ fontFamily: "var(--font-inter), sans-serif", lineHeight: "1.2" }}
           >
-            {SOURCE_NAMES[option]}
+            {t(`search.sources.${option}`)}
           </button>
         );
       })}

@@ -33,13 +33,18 @@ describe("SearchSourceSwitch", () => {
   });
 
   it("shows the catalog search looks in as pressed", () => {
-    expect(button("YouTube").getAttribute("aria-pressed")).toBe("true");
-    expect(button("Deezer").getAttribute("aria-pressed")).toBe("false");
+    expect(button("search.sources.youtube").getAttribute("aria-pressed")).toBe("true");
+    expect(button("search.sources.deezer").getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("offers every catalog", () => {
+    expect(button("search.sources.yandex").getAttribute("aria-pressed")).toBe("false");
+    expect(button("search.sources.spotify").getAttribute("aria-pressed")).toBe("false");
   });
 
   it("switches search to the catalog picked", async () => {
-    await act(async () => button("Deezer").click());
+    await act(async () => button("search.sources.deezer").click());
     expect(useSearchSourceStore.getState().source).toBe("deezer");
-    expect(button("Deezer").getAttribute("aria-pressed")).toBe("true");
+    expect(button("search.sources.deezer").getAttribute("aria-pressed")).toBe("true");
   });
 });
