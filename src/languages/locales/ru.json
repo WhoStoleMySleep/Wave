@@ -365,6 +365,7 @@
     "offset_hint": "Отрицательное значение сдвигает текст раньше, положительное — позже",
     "track_unavailable": "«{title}» недоступен, пропускаем...",
     "track_unavailable_title": "Трек недоступен",
+    "track_not_on_youtube_title": "Нет на YouTube",
     "playback_stopped_too_many_errors": "Воспроизведение остановлено — слишком много треков не удалось загрузить.",
     "wave": "Волна",
     "wave_by_track": "Волна по «{title}»",
@@ -430,7 +431,8 @@
     "albums": "Альбомы",
     "playlists": "Плейлисты",
     "no_results": "Ничего не найдено",
-    "type_to_search": "Начните ввод"
+    "type_to_search": "Начните ввод",
+    "source": "Источник поиска"
   },
   "settings": {
     "title": "Настройки",
@@ -1051,5 +1053,15 @@
       "outro_subtitle": "Спасибо, что слушаешь",
       "minutes_label": "Минут музыки"
     }
+  },
+  "catalogs": {
+    "wrong_track": "Не тот трек",
+    "match_title": "Какой трек играть?",
+    "match_desc": "Выбор сохранится для всех на сервере",
+    "match_current": "Сейчас",
+    "match_saved": "Трек заменён",
+    "match_saved_desc": "Сработает со следующего запуска",
+    "match_load_failed": "Не удалось загрузить варианты",
+    "match_save_failed": "Не удалось сохранить выбор"
   }
 }

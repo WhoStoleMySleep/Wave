@@ -2,6 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { api } from "@/shared/api";
+import type { SearchSource } from "@/shared/api";
 import { searchFor, useSearch, type SearchKind, type SearchResult } from "./useSearch";
 
 vi.mock("@/shared/api", () => ({
@@ -21,13 +22,20 @@ describe("useSearch", () => {
   let root: Root;
   let latest: SearchResult<unknown>;
 
-  function Probe({ query, kind, enabled = true }: { query: string; kind: SearchKind; enabled?: boolean }) {
-    latest = useSearch(query, kind, { enabled }) as SearchResult<unknown>;
+  interface ProbeProps {
+    query: string;
+    kind: SearchKind;
+    enabled?: boolean;
+    source?: SearchSource;
+  }
+
+  function Probe({ query, kind, enabled = true, source }: ProbeProps) {
+    latest = useSearch(query, kind, { enabled, source }) as SearchResult<unknown>;
     return null;
   }
 
-  async function render(query: string, kind: SearchKind = "artist", enabled = true) {
-    await act(async () => root.render(<Probe query={query} kind={kind} enabled={enabled} />));
+  async function render(query: string, kind: SearchKind = "artist", enabled = true, source?: SearchSource) {
+    await act(async () => root.render(<Probe query={query} kind={kind} enabled={enabled} source={source} />));
   }
 
   async function wait(ms: number) {
@@ -63,7 +71,7 @@ describe("useSearch", () => {
     await wait(DEBOUNCE_MS);
 
     expect(search).toHaveBeenCalledTimes(1);
-    expect(search).toHaveBeenCalledWith("mus", "artist");
+    expect(search).toHaveBeenCalledWith("mus", "artist", "youtube");
     expect(latest).toMatchObject({ items: [{ type: "artist", id: "1" }], loading: false, hasLoaded: true });
   });
 
@@ -97,6 +105,16 @@ describe("useSearch", () => {
     await render("muse", "artist", true);
     await wait(DEBOUNCE_MS);
     expect(search).toHaveBeenCalledTimes(1);
+  });
+
+  it("searches the same words again in another catalog", async () => {
+    search.mockReturnValue(answer([{ type: "artist", id: "1" }]));
+    await render("muse");
+    await wait(DEBOUNCE_MS);
+    await render("muse", "artist", true, "deezer");
+    await wait(DEBOUNCE_MS);
+    expect(search).toHaveBeenCalledTimes(2);
+    expect(search).toHaveBeenLastCalledWith("muse", "artist", "deezer");
   });
 
   it("reports a failed search as an error with no results", async () => {

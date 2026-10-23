@@ -7,10 +7,12 @@ import type {
   PopularTimeWindow,
   PopularTracksPage,
   SearchItem,
+  SearchSource,
   SearchType,
+  TrackMatch,
 } from "../../contracts";
 import { apiPath, withQuery } from "../apiPath";
-import { request } from "../client";
+import { request, requestNoContent } from "../client";
 
 export interface RadioOptions {
   history?: string[];
@@ -21,8 +23,8 @@ export interface RadioOptions {
 }
 
 export const catalogEndpoints = {
-  search(q: string, type: SearchType = "all"): Promise<Items<SearchItem>> {
-    return request<Items<SearchItem>>(withQuery("/v1/search", { q, type }));
+  search(q: string, type: SearchType = "all", source: SearchSource = "youtube"): Promise<Items<SearchItem>> {
+    return request<Items<SearchItem>>(withQuery("/v1/search", { q, type, source }));
   },
 
   getTrack(id: string): Promise<CatalogTrack> {
@@ -47,6 +49,15 @@ export const catalogEndpoints = {
 
   getPlaylist(id: string): Promise<CatalogPlaylistDetails> {
     return request<CatalogPlaylistDetails>(apiPath`/v1/playlists/${id}`);
+  },
+
+  getTrackMatch(id: string): Promise<TrackMatch> {
+    return request<TrackMatch>(apiPath`/v1/tracks/${id}/match`);
+  },
+
+  /** The chosen track plays for everyone on the server from then on. */
+  setTrackMatch(id: string, youtubeId: string): Promise<void> {
+    return requestNoContent(apiPath`/v1/tracks/${id}/match`, { method: "PUT", body: { youtubeId } });
   },
 
   getPopularTracks(window: PopularTimeWindow = "7d", limit = 50): Promise<PopularTracksPage> {

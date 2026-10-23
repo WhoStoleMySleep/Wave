@@ -33,6 +33,12 @@ describe("FailureGuard", () => {
     expect(stop).toHaveBeenCalledTimes(1);
   });
 
+  it("skips a track missing on YouTube without counting it", () => {
+    for (let i = 0; i < 5; i++) guard.handle({ trackId: "t", message: "missing", notOnYoutube: true });
+    expect(skip).toHaveBeenCalledTimes(5);
+    expect(stop).not.toHaveBeenCalled();
+  });
+
   it("starts counting again after a track plays", () => {
     for (let i = 0; i < 3; i++) guard.handle({ trackId: "t", message: "boom" });
     guard.reset();
