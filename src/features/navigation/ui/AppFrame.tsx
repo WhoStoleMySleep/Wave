@@ -921,7 +921,7 @@ export default function AppFrame({ children }: AppFrameProps) {
                 }}
               />
 
-              <SearchSourceSwitch />
+              {!isMobile && <SearchSourceSwitch />}
 
               {/* Right: Appearing clear button */}
               <AnimatePresence>
@@ -956,6 +956,11 @@ export default function AppFrame({ children }: AppFrameProps) {
                   transition={{ duration: 0.1, ease: [0.16, 1, 0.3, 1] }}
                   className={`w-full max-w-[660px] mt-[8px] ${isMobile ? "h-[min(500px,calc(100dvh-220px))]" : "h-[500px]"} rounded-[8px] pointer-events-auto flex flex-col overflow-hidden bg-bg-panel/95 border border-border-primary/50`}
                 >
+                  {isMobile && (
+                    <div className="flex px-[14px] pt-[12px] shrink-0">
+                      <SearchSourceSwitch />
+                    </div>
+                  )}
                   <div className="flex gap-[6px] px-[14px] pt-[12px] pb-[6px] shrink-0 overflow-x-auto">
                     {filterKeys.map((key) => {
                       const label = filterLabels[key];

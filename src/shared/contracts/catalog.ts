@@ -29,8 +29,8 @@ export interface Items<T> {
 
 export type SearchType = "all" | "track" | "artist" | "album" | "playlist";
 
-/** Where search looks; a Deezer track plays as the YouTube track matched to it. */
-export type SearchSource = "youtube" | "deezer";
+/** Where search looks; a track from another catalog plays as the YouTube track matched to it. */
+export type SearchSource = "youtube" | "deezer" | "yandex" | "spotify";
 
 export type TrackMatchStatus = "auto" | "doubtful" | "missing" | "manual" | "none";
 

@@ -432,7 +432,13 @@
     "playlists": "Плейлісти",
     "no_results": "Нічого не знайдено",
     "type_to_search": "Почніть вводити",
-    "source": "Джерело пошуку"
+    "source": "Джерело пошуку",
+    "sources": {
+      "youtube": "YouTube",
+      "deezer": "Deezer",
+      "yandex": "Яндекс",
+      "spotify": "Spotify"
+    }
   },
   "settings": {
     "title": "Налаштування",

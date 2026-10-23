@@ -10,7 +10,7 @@ export interface SearchSourceState {
 
 const SEARCH_SOURCE_STORAGE_KEY = "wave_search_source";
 
-export const SEARCH_SOURCES: readonly SearchSource[] = ["youtube", "deezer"];
+export const SEARCH_SOURCES: readonly SearchSource[] = ["youtube", "deezer", "yandex", "spotify"];
 
 /** The catalog search last looked in, so the next search starts there. */
 export const useSearchSourceStore = create<SearchSourceState>()(
