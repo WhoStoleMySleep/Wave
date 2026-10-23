@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, toClientTrack, type SearchAlbum, type SearchArtist, type SearchItem, type SearchPlaylist } from "@/shared/api";
+import {
+  api,
+  toClientTrack,
+  type SearchAlbum,
+  type SearchArtist,
+  type SearchItem,
+  type SearchPlaylist,
+  type SearchSource,
+} from "@/shared/api";
 import type { Track } from "@/shared/types";
 import { log } from "@/shared/utils/logger";
 
@@ -16,6 +24,7 @@ export type SearchKind = keyof SearchResults;
 export interface SearchOptions {
   enabled?: boolean;
   debounceMs?: number;
+  source?: SearchSource;
 }
 
 export interface SearchState<T> {
@@ -41,12 +50,16 @@ const SELECT: { [K in SearchKind]: (items: SearchItem[]) => SearchResults[K] } =
 };
 
 /** @returns the results, or the error once the request failed */
-export async function searchFor<K extends SearchKind>(kind: K, query: string): Promise<SearchResults[K] | Error> {
+export async function searchFor<K extends SearchKind>(
+  kind: K,
+  query: string,
+  source: SearchSource = "youtube",
+): Promise<SearchResults[K] | Error> {
   try {
-    const response = await api.search(query, kind);
+    const response = await api.search(query, kind, source);
     return SELECT[kind](response.items);
   } catch (error) {
-    log("yellow", "search", `${kind} search for "${query}" failed`, error);
+    log("yellow", "search", `${source} ${kind} search for "${query}" failed`, error);
     return error instanceof Error ? error : new Error(String(error));
   }
 }
@@ -60,7 +73,12 @@ function settled<T>(result: T[] | Error): SearchState<T> {
   return { items: result, loading: false, hasLoaded: true, error: null };
 }
 
-function useSearchRequest<K extends SearchKind>(kind: K) {
+/** The same words searched in another catalog are another search. */
+function searchKey(source: SearchSource, query: string): string {
+  return `${source}\n${query}`;
+}
+
+function useSearchRequest<K extends SearchKind>(kind: K, source: SearchSource) {
   type Item = SearchResults[K][number];
   const [state, setState] = useState<SearchState<Item>>(idle);
   const latest = useRef(0);
@@ -70,12 +88,12 @@ function useSearchRequest<K extends SearchKind>(kind: K) {
     async (query: string) => {
       const request = ++latest.current;
       setState((current) => ({ ...current, loading: true }));
-      const result = (await searchFor(kind, query)) as Item[] | Error;
+      const result = (await searchFor(kind, query, source)) as Item[] | Error;
       if (request !== latest.current) return;
-      fetchedQuery.current = result instanceof Error ? null : query;
+      fetchedQuery.current = result instanceof Error ? null : searchKey(source, query);
       setState(settled(result));
     },
-    [kind],
+    [kind, source],
   );
 
   const cancel = useCallback((next?: SearchState<Item>) => {
@@ -97,9 +115,9 @@ function useSearchRequest<K extends SearchKind>(kind: K) {
 export function useSearch<K extends SearchKind>(
   query: string,
   kind: K,
-  { enabled = true, debounceMs = DEFAULT_DEBOUNCE_MS }: SearchOptions = {},
+  { enabled = true, debounceMs = DEFAULT_DEBOUNCE_MS, source = "youtube" }: SearchOptions = {},
 ): SearchResult<SearchResults[K][number]> {
-  const { state, run, cancel, wait, fetchedQuery } = useSearchRequest(kind);
+  const { state, run, cancel, wait, fetchedQuery } = useSearchRequest(kind, source);
   const trimmed = query.trim();
   const searchable = enabled && trimmed.length >= MIN_QUERY_LENGTH;
 
@@ -110,11 +128,11 @@ export function useSearch<K extends SearchKind>(
       return;
     }
     if (!enabled) return;
-    if (fetchedQuery.current === trimmed) return cancel();
+    if (fetchedQuery.current === searchKey(source, trimmed)) return cancel();
     wait();
     const timer = setTimeout(() => void run(trimmed), debounceMs);
     return () => clearTimeout(timer);
-  }, [cancel, debounceMs, enabled, fetchedQuery, run, trimmed, wait]);
+  }, [cancel, debounceMs, enabled, fetchedQuery, run, source, trimmed, wait]);
 
   const runNow = useCallback(() => {
     if (searchable) void run(trimmed);

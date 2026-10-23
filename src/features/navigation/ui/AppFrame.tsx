@@ -35,7 +35,12 @@ import {
   usePlayerStore,
 } from "@/features/player";
 import SearchResultsList from "@/features/search/ui/SearchResultsList";
-import { SearchHistoryList, useSearchHistoryStore } from "@/features/search";
+import {
+  SearchHistoryList,
+  SearchSourceSwitch,
+  useSearchHistoryStore,
+  useSearchSourceStore,
+} from "@/features/search";
 import { useTranslation } from "@/languages";
 import { useTheme } from "next-themes";
 import {
@@ -52,6 +57,7 @@ import { SettingsModal, useCustomizationStore, getBlockStyle } from "@/features/
 import { UpdateModal, UpdateToastBridge } from "@/features/updater";
 import { OfflineBanner } from "@/features/connectivity";
 import { HandoffBanner } from "@/features/devices";
+import { TrackMatchModal } from "@/features/catalogs";
 import { useIsMobile } from "@/shared/hooks";
 
 
@@ -310,40 +316,56 @@ export default function AppFrame({ children }: AppFrameProps) {
   );
   const addHistoryItem = useSearchHistoryStore((state) => state.addItem);
   const historyItems = useSearchHistoryStore((state) => state.items);
+  const searchSource = useSearchSourceStore((state) => state.source);
   const {
     items: allResults,
     loading: allLoading,
     hasLoaded: allHasLoaded,
     runNow: runAllSearchNow,
-  } = useSearch(searchQuery, "all", { enabled: searchOpen && isAllSearchFilter });
+  } = useSearch(searchQuery, "all", {
+    enabled: searchOpen && isAllSearchFilter,
+    source: searchSource,
+  });
 
   const {
     items: trackResults,
     loading: trackLoading,
     hasLoaded: trackHasLoaded,
     runNow: runTrackSearchNow,
-  } = useSearch(searchQuery, "track", { enabled: searchOpen && isTrackSearchFilter });
+  } = useSearch(searchQuery, "track", {
+    enabled: searchOpen && isTrackSearchFilter,
+    source: searchSource,
+  });
 
   const {
     items: artistResults,
     loading: artistLoading,
     hasLoaded: artistHasLoaded,
     runNow: runArtistSearchNow,
-  } = useSearch(searchQuery, "artist", { enabled: searchOpen && isArtistSearchFilter });
+  } = useSearch(searchQuery, "artist", {
+    enabled: searchOpen && isArtistSearchFilter,
+    source: searchSource,
+  });
 
   const {
     items: albumResults,
     loading: albumLoading,
     hasLoaded: albumHasLoaded,
     runNow: runAlbumSearchNow,
-  } = useSearch(searchQuery, "album", { enabled: searchOpen && isAlbumSearchFilter });
+  } = useSearch(searchQuery, "album", {
+    enabled: searchOpen && isAlbumSearchFilter,
+    source: searchSource,
+  });
 
   const {
     items: playlistResults,
     loading: playlistLoading,
     hasLoaded: playlistHasLoaded,
     runNow: runPlaylistSearchNow,
-  } = useSearch(searchQuery, "playlist", { enabled: searchOpen && isPlaylistSearchFilter });
+  } = useSearch(searchQuery, "playlist", {
+    enabled: searchOpen && isPlaylistSearchFilter,
+    source: searchSource,
+  });
 
   const searchResults = useMemo(() => {
     if (isAllSearchFilter) {
@@ -899,6 +921,8 @@ export default function AppFrame({ children }: AppFrameProps) {
                 }}
               />
 
+              <SearchSourceSwitch />
+
               {/* Right: Appearing clear button */}
               <AnimatePresence>
                 {searchQuery.length > 0 && (
@@ -1065,6 +1089,7 @@ export default function AppFrame({ children }: AppFrameProps) {
       <AddToPlaylistModal />
       <AddToLibraryModal />
       <RemoveFromPlaylistModal />
+      <TrackMatchModal />
       <RemoveFromLibraryModal />
       <ImportLikesModal />
       <CreatePlaylistModal />

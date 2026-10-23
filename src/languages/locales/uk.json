@@ -365,6 +365,7 @@
     "offset_hint": "Від'ємне значення зміщує текст раніше, додатне — пізніше",
     "track_unavailable": "«{title}» недоступний, пропускаємо...",
     "track_unavailable_title": "Трек недоступний",
+    "track_not_on_youtube_title": "Немає на YouTube",
     "playback_stopped_too_many_errors": "Відтворення зупинено — забагато треків не вдалося завантажити.",
     "wave": "Хвиля",
     "wave_by_track": "Хвиля за «{title}»",
@@ -430,7 +431,8 @@
     "albums": "Альбоми",
     "playlists": "Плейлісти",
     "no_results": "Нічого не знайдено",
-    "type_to_search": "Почніть вводити"
+    "type_to_search": "Почніть вводити",
+    "source": "Джерело пошуку"
   },
   "settings": {
     "title": "Налаштування",
@@ -1051,5 +1053,15 @@
       "outro_subtitle": "Дякуємо, що слухаєш",
       "minutes_label": "Хвилин музики"
     }
+  },
+  "catalogs": {
+    "wrong_track": "Не той трек",
+    "match_title": "Який трек грати?",
+    "match_desc": "Вибір збережеться для всіх на сервері",
+    "match_current": "Зараз",
+    "match_saved": "Трек замінено",
+    "match_saved_desc": "Спрацює з наступного запуску",
+    "match_load_failed": "Не вдалося завантажити варіанти",
+    "match_save_failed": "Не вдалося зберегти вибір"
   }
 }

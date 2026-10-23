@@ -361,6 +361,7 @@
     "offset_hint": "Negative moves lyrics earlier, positive later",
     "track_unavailable": "\"{title}\" is unavailable, skipping...",
     "track_unavailable_title": "Track unavailable",
+    "track_not_on_youtube_title": "Not on YouTube",
     "playback_stopped_too_many_errors": "Playback stopped — too many tracks failed to load.",
     "wave": "Wave",
     "wave_by_track": "Wave from “{title}”",
@@ -424,7 +425,8 @@
     "albums": "Albums",
     "playlists": "Playlists",
     "no_results": "No results found",
-    "type_to_search": "Type to search"
+    "type_to_search": "Type to search",
+    "source": "Search source"
   },
   "settings": {
     "title": "Settings",
@@ -992,5 +994,15 @@
       "outro_subtitle": "Thanks for listening",
       "minutes_label": "Minutes listened"
     }
+  },
+  "catalogs": {
+    "wrong_track": "Wrong track",
+    "match_title": "Which track should play?",
+    "match_desc": "The choice is kept for everyone on the server",
+    "match_current": "Current",
+    "match_saved": "Track replaced",
+    "match_saved_desc": "Takes effect the next time it plays",
+    "match_load_failed": "Couldn't load the options",
+    "match_save_failed": "Couldn't save the choice"
   }
 }

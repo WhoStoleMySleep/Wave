@@ -7,6 +7,7 @@ import {
   LuPlus,
   LuTrash2,
   LuFolderPlus,
+  LuReplace,
 } from "react-icons/lu";
 import type { DropdownMenuItem } from "@/shared/ui/DropdownMenu";
 import { playerEngine } from "../engine/playerEngine";
@@ -20,6 +21,7 @@ import {
 import { useTranslation } from "@/languages";
 import { showToast } from "@/shared/ui";
 import { useDownloadMenuItem } from "@/features/downloads";
+import { isCatalogTrack, useTrackMatchStore } from "@/features/catalogs";
 import type { Track, TrackArtist } from "@/shared/types";
 
 export interface SongMenuContext {
@@ -77,6 +79,19 @@ export function useSongMenuItems(ctx: SongMenuContext): DropdownMenuItem[] {
     [isTrack, id, title, artists, artistId, artistList, explicit, coverUrl, durationMs],
   );
   const downloadItem = useDownloadMenuItem(downloadTrack);
+
+  const matchItem = useMemo<DropdownMenuItem | null>(
+    () =>
+      isTrack && id && isCatalogTrack(id)
+        ? {
+            id: "wrong-track",
+            label: t("catalogs.wrong_track"),
+            icon: <LuReplace size={15} />,
+            onClick: () => useTrackMatchStore.getState().open({ id, title, artists, coverUrl }),
+          }
+        : null,
+    [isTrack, id, title, artists, coverUrl, t],
+  );
 
   const { data: playlistsData } = usePlaylistsList();
 
@@ -161,6 +176,7 @@ export function useSongMenuItems(ctx: SongMenuContext): DropdownMenuItem[] {
             onClick: handleLike,
           },
           ...(downloadItem ? [downloadItem] : []),
+          ...(matchItem ? [matchItem] : []),
           {
             id: "remove-from-playlist",
             label: t("common.remove_from_playlist"),
@@ -246,6 +262,7 @@ export function useSongMenuItems(ctx: SongMenuContext): DropdownMenuItem[] {
           onClick: handleLike,
         },
         ...(downloadItem ? [downloadItem] : []),
+        ...(matchItem ? [matchItem] : []),
         {
           id: "add-to-playlist",
           label: t("common.add_to_playlist"),
@@ -298,6 +315,7 @@ export function useSongMenuItems(ctx: SongMenuContext): DropdownMenuItem[] {
     playlistTitle,
     liked,
     downloadItem,
+    matchItem,
     handleLike,
     playlistsData,
     t,

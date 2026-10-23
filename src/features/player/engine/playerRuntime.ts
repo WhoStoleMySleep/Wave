@@ -8,9 +8,10 @@ import { hasSource, seekWhenLoaded } from "./audioElement";
 import { HeadStart } from "./audioDownload";
 import { crossfadeMs, isCrossfadeDue } from "./crossfade";
 import { errorMessage, renew } from "./engineUtils";
+import type { PlaybackFailure } from "./failureGuard";
 import { isRealEnd, knownDurationMs, mediaErrorInfo, positionMs, type MediaHandlers } from "./mediaEvents";
 import { OutputLevel } from "./outputLevel";
-import { classifyPlayError, logPlaybackFailure } from "./playFailures";
+import { classifyPlayError, isNotOnYoutube, logPlaybackFailure } from "./playFailures";
 import { installMediaSessionHandlers, showMediaMetadata, watchOutputDevices } from "./systemMedia";
 import { TrackPreloader } from "./trackPreloader";
 import { isLiveLoad, type LoadTicket, TrackStarter } from "./trackStarter";
@@ -57,7 +58,7 @@ export class PlayerRuntime {
     cacheSignal: () => this.cacheController?.signal ?? null,
   });
   public onEnded?: () => void;
-  public onError?: (info: { trackId: string; message: string }) => void;
+  public onError?: (failure: PlaybackFailure) => void;
 
   constructor() {
     this.audio.volume = this.level.target();
@@ -293,7 +294,7 @@ export class PlayerRuntime {
     logPlaybackFailure(track, error);
     const message = errorMessage(error);
     store().setStatus("error", message);
-    this.onError?.({ trackId: track.id, message });
+    this.onError?.({ trackId: track.id, message, notOnYoutube: isNotOnYoutube(error) });
   }
 
   private resumeFailed(error: unknown, epoch: number, track: Track | null): void {

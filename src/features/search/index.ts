@@ -16,7 +16,9 @@ export {
   type NewSearchHistoryItem,
   withHistoryItem,
 } from "./store/searchHistoryStore";
+export { useSearchSourceStore, SEARCH_SOURCES, type SearchSourceState } from "./store/searchSourceStore";
 export {
   SearchHistoryList,
   type SearchHistoryListProps,
 } from "./ui/SearchHistoryList";
+export { SearchSourceSwitch } from "./ui/SearchSourceSwitch";
