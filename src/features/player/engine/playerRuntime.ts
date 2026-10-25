@@ -1,9 +1,11 @@
 import { waveDb } from "@/shared/storage";
 import type { Track } from "@/shared/types";
 import { log } from "@/shared/utils/logger";
+import { otherAudioWatch } from "@/platform/otherAudio";
 import { usePlayerStore, type PlayerState } from "../store/playerStore";
 import { installAndroidMediaSync } from "./androidMediaSync";
 import { AudioDeck } from "./audioDeck";
+import { installAudioDucking } from "./audioDucking";
 import { hasSource, seekWhenLoaded } from "./audioElement";
 import { HeadStart } from "./audioDownload";
 import { crossfadeMs, isCrossfadeDue } from "./crossfade";
@@ -66,6 +68,7 @@ export class PlayerRuntime {
     watchOutputDevices(() => this.pauseForDeviceChange());
     installMediaSessionHandlers((command) => store().dispatch(command));
     installAndroidMediaSync();
+    installAudioDucking(this.level, () => this.audio, otherAudioWatch());
     log("green", "boot", `player runtime initialized, volume ${this.audio.volume}`);
   }
 

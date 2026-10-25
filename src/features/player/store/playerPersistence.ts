@@ -28,6 +28,8 @@ const PREFERENCE_KEYS = [
   "pauseOnDeviceChange",
   "autoplaySimilar",
   "normalizeVolume",
+  "duckOthers",
+  "duckVolume",
   "crossfadeSeconds",
   "trackDoubleClickBehavior",
   "defaultPlaybackContext",

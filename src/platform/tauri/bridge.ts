@@ -27,6 +27,16 @@ function subscribe<T>(event: string, cb: (payload: T) => void): () => void {
 
 const noopUnsubscribe = () => () => {};
 
+/** The shell polls only while someone listens. */
+function watchOtherAudio(cb: (active: boolean) => void): () => void {
+  const off = subscribe<boolean>("other-audio", cb);
+  void invoke("watch_other_audio", { enabled: true }).catch(() => {});
+  return () => {
+    off();
+    void invoke("watch_other_audio", { enabled: false }).catch(() => {});
+  };
+}
+
 /**
  * Builds a `window.waveNative`-compatible bridge on top of Tauri so the
  * renderer keeps a single native API regardless of the shell. Auto-update,
@@ -176,5 +186,7 @@ export async function createTauriBridge(): Promise<WaveNativeApi> {
       overlay ? void overlay.updateSettings(settings) : requestMain("updateSettings", settings),
     onOverlaySettingsChanged: noopUnsubscribe,
     onOverlayVisibility: (cb) => subscribe(OVERLAY_EVENTS.visibility, cb),
+    // android reports through its own shell, see platform/android
+    watchOtherAudio: platform === "darwin" ? watchOtherAudio : undefined,
   };
 }

@@ -65,6 +65,11 @@ object WaveMedia {
         setSessionActivity(openAppIntent(activity.applicationContext))
       }
     }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      OtherAudio.attach(activity.applicationContext) { active ->
+        runInPage("window.__waveOtherAudio && window.__waveOtherAudio($active)")
+      }
+    }
     view.addJavascriptInterface(Bridge(activity), "WaveAndroid")
   }
 
@@ -105,12 +110,11 @@ object WaveMedia {
 
   /** Forwards a transport command to the web player, which owns playback. */
   fun dispatch(action: String, position: Long = 0) {
-    main.post {
-      webView.get()?.evaluateJavascript(
-        "window.__waveMediaAction && window.__waveMediaAction(${JSONObject.quote(action)}, $position)",
-        null,
-      )
-    }
+    runInPage("window.__waveMediaAction && window.__waveMediaAction(${JSONObject.quote(action)}, $position)")
+  }
+
+  private fun runInPage(script: String) {
+    main.post { webView.get()?.evaluateJavascript(script, null) }
   }
 
   private fun update(json: JSONObject) {
@@ -126,6 +130,7 @@ object WaveMedia {
     isPlaying = json.optBoolean("playing")
     liked = json.optBoolean("liked")
     hasTrack = true
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) OtherAudio.onPlaying(isPlaying)
 
     val url = json.optString("artworkUrl").takeIf { it.isNotEmpty() }
     if (url != artworkUrl) {
@@ -144,6 +149,7 @@ object WaveMedia {
     val context = appContext ?: return
     hasTrack = false
     isPlaying = false
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) OtherAudio.onPlaying(false)
     session?.setPlaybackState(
       PlaybackStateCompat.Builder().setState(PlaybackStateCompat.STATE_NONE, 0, 0f).build()
     )
@@ -262,6 +268,13 @@ object WaveMedia {
     @JavascriptInterface
     fun clearMedia() {
       main.post { clear() }
+    }
+
+    /** Android 8+ only; older versions never report other sound. */
+    @JavascriptInterface
+    fun watchOtherAudio(enabled: Boolean) {
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+      main.post { OtherAudio.watch(enabled) }
     }
 
     /** Leaves the app running behind the launcher, the way back works in other players. */

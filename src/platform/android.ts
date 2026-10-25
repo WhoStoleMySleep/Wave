@@ -4,6 +4,8 @@ export interface WaveAndroidApi {
   updateMedia(json: string): void;
   clearMedia(): void;
   moveToBack(): void;
+  /** Missing in shells built before ducking; see `OtherAudio.kt`. */
+  watchOtherAudio?(enabled: boolean): void;
 }
 
 export interface AndroidMediaState {

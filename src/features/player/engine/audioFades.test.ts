@@ -76,6 +76,17 @@ describe("fadeInAlongPlayback", () => {
     expect(audio.volume).toBeCloseTo(0.5);
   });
 
+  it("reports done once the fade is complete, and only then", () => {
+    const audio = audioAt(0);
+    const onDone = vi.fn();
+    fadeInAlongPlayback(audio, 2000, () => 1, onDone);
+    playTo(audio, 1);
+    expect(onDone).not.toHaveBeenCalled();
+    playTo(audio, 2);
+    playTo(audio, 3);
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
   it("never drops below the floor a hidden WebView needs", () => {
     const audio = audioAt(0);
     fadeInAlongPlayback(audio, 1000, () => 1);

@@ -25,6 +25,8 @@ export const INITIAL_PLAYER_STATE: PlayerState = {
   pauseOnDeviceChange: true,
   autoplaySimilar: true,
   normalizeVolume: true,
+  duckOthers: false,
+  duckVolume: 0.2,
   crossfadeSeconds: 0,
   trackDoubleClickBehavior: "play",
   defaultPlaybackContext: "resume",

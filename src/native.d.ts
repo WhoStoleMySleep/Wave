@@ -8,6 +8,8 @@ declare global {
     WaveAndroid?: WaveAndroidApi;
     /** Called by the Android shell for system media controls and headset buttons. */
     __waveMediaAction?: (action: string, positionMs: number) => void;
+    /** Called by the Android shell when another app starts or stops sounding. */
+    __waveOtherAudio?: (active: boolean) => void;
   }
 }
 
