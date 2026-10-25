@@ -1,6 +1,6 @@
 [package]
 name = "wave"
-version = "0.1.56"
+version = "0.1.57"
 description = "Wave desktop client"
 license = "PolyForm-Noncommercial-1.0.0"
 edition = "2021"
