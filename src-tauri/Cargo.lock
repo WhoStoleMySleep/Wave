@@ -4873,7 +4873,7 @@ dependencies = [
 
 [[package]]
 name = "wave"
-version = "0.1.56"
+version = "0.1.57"
 dependencies = [
  "base64 0.22.1",
  "dirs",
