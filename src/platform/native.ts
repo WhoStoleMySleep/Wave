@@ -152,4 +152,6 @@ export interface WaveNativeApi {
   updateOverlaySettings: (settings: any) => void;
   onOverlaySettingsChanged: (cb: (settings: any) => void) => () => void;
   onOverlayVisibility: (cb: (visible: boolean) => void) => () => void;
+  /** Reports another app starting and stopping sound; absent where the shell can't tell. */
+  watchOtherAudio?: (cb: (active: boolean) => void) => () => void;
 }

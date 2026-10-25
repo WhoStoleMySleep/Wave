@@ -4,6 +4,7 @@ mod files;
 #[cfg(desktop)]
 mod legacy_data;
 mod netdiag;
+mod other_audio;
 
 use tauri::{Manager, WindowEvent};
 
@@ -65,6 +66,7 @@ pub fn run() {
             app_icon::set_app_icon,
             auth_store::auth_session_read,
             auth_store::auth_session_write,
+            other_audio::watch_other_audio,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

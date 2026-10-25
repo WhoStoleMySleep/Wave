@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "@/languages";
 import { usePlayerStore } from "@/features/player";
-import { ToggleSwitch } from "@/shared/ui";
+import { otherAudioWatch } from "@/platform/otherAudio";
+import { Slider, ToggleSwitch } from "@/shared/ui";
 import { SettingRow, SettingSection, SegmentedControl } from "../controls";
 
 const CROSSFADE_OPTIONS = [0, 3, 6, 9, 12] as const;
@@ -36,6 +37,11 @@ export function PlaybackTab({ searchQuery }: { searchQuery?: string }) {
   const setNormalizeVolume = usePlayerStore(
     (state) => state.setNormalizeVolume,
   );
+  const duckOthers = usePlayerStore((state) => state.duckOthers);
+  const setDuckOthers = usePlayerStore((state) => state.setDuckOthers);
+  const duckVolume = usePlayerStore((state) => state.duckVolume);
+  const setDuckVolume = usePlayerStore((state) => state.setDuckVolume);
+  const canDuck = otherAudioWatch() !== null;
   const crossfadeSeconds = usePlayerStore((state) => state.crossfadeSeconds);
   const setCrossfadeSeconds = usePlayerStore(
     (state) => state.setCrossfadeSeconds,
@@ -75,6 +81,40 @@ export function PlaybackTab({ searchQuery }: { searchQuery?: string }) {
           />
         }
       />
+
+      {canDuck && (
+        <SettingRow
+          title={t("settings.duck_others.title")}
+          description={t("settings.duck_others.description")}
+          titleKey="settings.duck_others.title"
+          descKey="settings.duck_others.description"
+          searchQuery={searchQuery}
+          control={<ToggleSwitch checked={duckOthers} onChange={setDuckOthers} />}
+        />
+      )}
+
+      {canDuck && duckOthers && (
+        <SettingRow
+          title={t("settings.duck_volume.title")}
+          description={t("settings.duck_volume.description")}
+          titleKey="settings.duck_volume.title"
+          descKey="settings.duck_volume.description"
+          searchQuery={searchQuery}
+          control={
+            <div className="w-[180px]">
+              <Slider
+                value={Math.round(duckVolume * 100)}
+                onChange={(percent) => setDuckVolume(percent / 100)}
+                min={5}
+                max={80}
+                step={5}
+                unit="%"
+                ariaLabel={t("settings.duck_volume.title")}
+              />
+            </div>
+          }
+        />
+      )}
 
       <SettingRow
         title={t("settings.crossfade.title")}

@@ -48,15 +48,22 @@ export function fadeVolume(audio: HTMLAudioElement, target: number, onDone: () =
  * Fades in along the element's own `timeupdate`, which keeps firing in a hidden page,
  * so a crossfade holds its length there.
  * @param volume - reads the target on every step, so a volume change mid-fade is followed
- * @returns cancels the fade
+ * @returns cancels the fade; `onDone` is not called then
  */
-export function fadeInAlongPlayback(audio: HTMLAudioElement, durationMs: number, volume: () => number): () => void {
+export function fadeInAlongPlayback(
+  audio: HTMLAudioElement,
+  durationMs: number,
+  volume: () => number,
+  onDone: () => void = noop,
+): () => void {
   const from = audio.currentTime;
   const stop = () => audio.removeEventListener("timeupdate", onTime);
   const onTime = () => {
     const progress = Math.min(1, ((audio.currentTime - from) * MS_PER_SECOND) / durationMs);
     audio.volume = Math.max(FADE_FLOOR, Math.min(1, volume() * progress));
-    if (progress >= 1) stop();
+    if (progress < 1) return;
+    stop();
+    onDone();
   };
   audio.addEventListener("timeupdate", onTime);
   return stop;

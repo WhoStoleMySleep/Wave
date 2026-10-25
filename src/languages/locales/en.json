@@ -550,6 +550,14 @@
       "title": "Even volume",
       "description": "Bring loud tracks down to one level, as YouTube does."
     },
+    "duck_others": {
+      "title": "Quieter under other sound",
+      "description": "Softly lower the music while another app plays sound, such as a video, and bring it back after."
+    },
+    "duck_volume": {
+      "title": "Volume under other sound",
+      "description": "How much volume the music keeps while it is lowered."
+    },
     "crossfade": {
       "title": "Crossfade",
       "description": "Blend the end of a track into the next one.",

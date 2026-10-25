@@ -46,6 +46,10 @@ export interface SessionState {
   pauseOnDeviceChange: boolean;
   autoplaySimilar: boolean;
   normalizeVolume: boolean;
+  /** Lowers the music while another app plays sound, where the shell can tell. */
+  duckOthers: boolean;
+  /** Share of the volume, 0–1, the music keeps while it is lowered. */
+  duckVolume: number;
   crossfadeSeconds: number;
   trackDoubleClickBehavior: TrackDoubleClickBehavior;
   defaultPlaybackContext: DefaultPlaybackContext;
@@ -94,6 +98,8 @@ export interface PlayerStore extends PlayerState {
   setPauseOnDeviceChange: (value: boolean) => void;
   setAutoplaySimilar: (value: boolean) => void;
   setNormalizeVolume: (value: boolean) => void;
+  setDuckOthers: (value: boolean) => void;
+  setDuckVolume: (value: number) => void;
   setCrossfadeSeconds: (value: number) => void;
   setTrackDoubleClickBehavior: (value: TrackDoubleClickBehavior) => void;
   setDefaultPlaybackContext: (value: DefaultPlaybackContext) => void;
