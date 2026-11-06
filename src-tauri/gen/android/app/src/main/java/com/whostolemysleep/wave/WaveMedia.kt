@@ -4,10 +4,13 @@ import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -64,6 +67,7 @@ object WaveMedia {
         setCallback(SessionCallback)
         setSessionActivity(openAppIntent(activity.applicationContext))
       }
+      watchOutputLoss(activity.applicationContext)
     }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       OtherAudio.attach(activity.applicationContext) { active ->
@@ -71,6 +75,24 @@ object WaveMedia {
       }
     }
     view.addJavascriptInterface(Bridge(activity), "WaveAndroid")
+  }
+
+  /**
+   * The webview's `devicechange` does not fire reliably when headphones drop
+   * off, while this broadcast comes before the sound moves to the speaker.
+   */
+  private fun watchOutputLoss(context: Context) {
+    val receiver = object : BroadcastReceiver() {
+      override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) dispatch("output-lost")
+      }
+    }
+    ContextCompat.registerReceiver(
+      context,
+      receiver,
+      IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY),
+      ContextCompat.RECEIVER_NOT_EXPORTED,
+    )
   }
 
   /** The notification the playback service shows; null once there is nothing to show. */
