@@ -30,6 +30,7 @@ export function installAndroidMediaSync(): void {
     else if (action === "previous") dispatch({ type: "SKIP_PREVIOUS" });
     else if (action === "seek") dispatch({ type: "SEEK_COMMITTED", positionMs });
     else if (action === "like") toggleLike();
+    else if (action === "output-lost" && usePlayerStore.getState().pauseOnDeviceChange) dispatch({ type: "PAUSE_REQUESTED" });
   };
 
   let sent: (AndroidMediaState & { trackId: string; at: number }) | null = null;
