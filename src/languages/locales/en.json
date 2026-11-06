@@ -430,8 +430,7 @@
     "sources": {
       "youtube": "YouTube",
       "deezer": "Deezer",
-      "yandex": "Yandex",
-      "spotify": "Spotify"
+      "yandex": "Yandex"
     }
   },
   "settings": {
