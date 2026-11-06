@@ -39,7 +39,6 @@ describe("SearchSourceSwitch", () => {
 
   it("offers every catalog", () => {
     expect(button("search.sources.yandex").getAttribute("aria-pressed")).toBe("false");
-    expect(button("search.sources.spotify").getAttribute("aria-pressed")).toBe("false");
   });
 
   it("switches search to the catalog picked", async () => {

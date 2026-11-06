@@ -436,8 +436,7 @@
     "sources": {
       "youtube": "YouTube",
       "deezer": "Deezer",
-      "yandex": "Яндекс",
-      "spotify": "Spotify"
+      "yandex": "Яндекс"
     }
   },
   "settings": {
