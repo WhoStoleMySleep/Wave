@@ -18,6 +18,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { PlayerUiElements } from "./PlayerUiElements";
 import { useTrackSwipe } from "../hooks/useTrackSwipe";
+import { useNoTouchInertia } from "../hooks/useNoTouchInertia";
 import { DownLine, ListOrderedLine, Mic2Fill, Mic2Line } from "@mingcute/react";
 import { PlaybackFlowPane } from "./PlaybackFlowPane";
 import { usePlaybackSource } from "../hooks/usePlaybackSource";
@@ -333,6 +334,7 @@ export function FullscreenPlayer({
     onVerticalStart: onSwipeStart,
     enabled: isMobile,
   });
+  useNoTouchInertia(paneRef, isMobile);
 
   return (
     <div
