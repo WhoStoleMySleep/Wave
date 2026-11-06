@@ -15,7 +15,7 @@ export interface SwipeDismissOptions {
  * Pull-down-to-close for a full-screen sheet. The finger is tracked with plain
  * window pointer listeners and only writes the returned motion value, so the
  * sheet's enter/exit animations keep working while the gesture itself stays out
- * of framer's drag: after a framer drag Android WebView swallowed the next tap.
+ * of framer's drag.
  */
 export function useSwipeDismiss({ offset, velocity, onDismiss }: SwipeDismissOptions): {
   y: MotionValue<number | string>;
